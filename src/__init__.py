@@ -390,10 +390,10 @@ class App(Adw.Application):
                                 website="https://github.com/natesales/rAV1ator",
                                 issue_url="https://github.com/natesales/rAV1ator/issues")
         # about.set_translator_credits(translators())
-        about.set_developers(["Nate Sales <nate@natesales.net>","Gianni Rosato <grosatowork@proton.me>"])
-        about.set_designers(["Gianni Rosato <grosatowork@proton.me>"])
+        about.set_developers(["Nate Sales <nate@natesales.net>","Gianni Rosato <grosatowork@proton.me>", "Trix <>"])
+        about.set_designers(["Gianni Rosato <grosatowork@proton.me>", "Trix <>"])
         about.add_acknowledgement_section(
-            ("Special thanks to the AV1 Community for your knowledge &amp; inspiration!"),
+            ("Special thanks to the AV1 Community"),
             [
                 "AV1 Discord https://discord.gg/SjumTJEsFD",
             ]
