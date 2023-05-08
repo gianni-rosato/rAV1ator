@@ -81,7 +81,7 @@ modules:
         url: https://github.com/xiph/rav1e
         commit: 7121c0df0fd2443887b6ba5bd8eacfde60874d0c
     build-commands:
-      - RUSTFLAGS="-C target-cpu=generic" cargo build --release --verbose
+      - RUSTFLAGS="-C target-cpu=native" cargo build --release --verbose
       - install target/release/rav1e /app/bin/rav1e
 
   - name: av1an

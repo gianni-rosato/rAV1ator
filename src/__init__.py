@@ -9,6 +9,7 @@ import time
 import shutil
 
 from pathlib import Path
+from gettext import gettext as _
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
@@ -20,6 +21,8 @@ Adw.init()
 from . import info
 
 BASE_DIR = Path(__file__).resolve().parent
+
+app_id = "net.natesales.rAV1ator"
 
 def humanize(seconds):
     seconds = round(seconds)
@@ -50,9 +53,8 @@ def humanize(seconds):
         else:
             return ", ".join(duration[:-1]) + " and " + duration[-1]
 
-
 # metadata returns the file's resolution and audio bitrate
-def metadata(file) -> (float, float, float):
+def metadata(file): 
     try:
         cmd = [
             "ffprobe",
@@ -69,14 +71,12 @@ def metadata(file) -> (float, float, float):
         m = json.loads(x)
         streams = m["streams"]
         video = streams[0]
-        audio = streams[1]
 
-        return video["width"], video["height"], float(audio["sample_rate"]) / 1000
+        return video["width"], video["height"]
     except Exception as e:
         logging.error("Get metadata:", e)
-        return 1536, 864, 48
-
-
+        return None, None
+    
 def notify(text):
     application = Gtk.Application.get_default()
     notification = Gio.Notification.new(title="rAV1ator")
@@ -163,14 +163,22 @@ class MainWindow(Adw.Window):
     source_file_label = Gtk.Template.Child()
     resolution_width_entry = Gtk.Template.Child()
     resolution_height_entry = Gtk.Template.Child()
+    scaling_method = Gtk.Template.Child()
+    warning_image = Gtk.Template.Child()
     quantizer_scale = Gtk.Template.Child()
     speed_scale = Gtk.Template.Child()
+    chroma_switch = Gtk.Template.Child()
     grain_scale = Gtk.Template.Child()
 
     # Audio page
     bitrate_entry = Gtk.Template.Child()
     vbr_switch = Gtk.Template.Child()
     downmix_switch = Gtk.Template.Child()
+
+    # Advanced page
+    av1an_entry = Gtk.Template.Child()
+    rav1e_entry = Gtk.Template.Child()
+    workers_entry = Gtk.Template.Child()
 
     # Export page
     output_file_label = Gtk.Template.Child()
@@ -192,15 +200,14 @@ class MainWindow(Adw.Window):
 
         # Reset value to remove extra decimal
         self.speed_scale.set_value(0)
-        self.speed_scale.set_value(6)
+        self.speed_scale.set_value(8)
         self.quantizer_scale.set_value(0)
         self.quantizer_scale.set_value(80)
         self.grain_scale.set_value(0)
-        self.grain_scale.set_value(6)
-        self.grain_scale.set_value(0)
+        self.grain_scale.set_value(2)
 
         # resolution and audio bitrate
-        self.metadata: (float, float, float) = ()
+        self.metadata: (float, float) = ()
 
         # Absolute source path file
         self.source_file_absolute = ""
@@ -213,17 +220,28 @@ class MainWindow(Adw.Window):
     def load_metadata(self):
         self.metadata = metadata(self.source_file_absolute)
 
-    def set_defaults(self):
-        self.bitrate_same_as_source()
-        self.resolution_same_as_source()
+    @Gtk.Template.Callback()
+    def on_scale_value_changed(self, scale):
+        value = int(scale.get_value())
+        if value > 100:
+            self.warning_image.set_visible(True)
+        else:
+            self.warning_image.set_visible(False)
+
+    @Gtk.Template.Callback()
+    def empty_or_not_empty(self, entry):
+        if self.bitrate_entry.get_text() == "":
+            self.container_webm_button.set_sensitive(False)
+        else:
+            self.container_webm_button.set_sensitive(True)
 
     def handle_file_select(self):
-        self.set_defaults()
 
         # Trim file path
         if "/" in self.source_file_label.get_text():
             self.source_file_absolute = self.source_file_label.get_text()
             self.source_file_label.set_text(os.path.basename(self.source_file_absolute))
+            self.load_metadata()
 
     # Video
 
@@ -237,19 +255,6 @@ class MainWindow(Adw.Window):
             open_only=True,
             callback=self.handle_file_select
         )
-
-    @Gtk.Template.Callback()
-    def resolution_same_as_source(self, button=None):
-        self.load_metadata()
-        self.resolution_width_entry.set_text(str(self.metadata[0]))
-        self.resolution_height_entry.set_text(str(self.metadata[1]))
-
-    # Audio
-
-    @Gtk.Template.Callback()
-    def bitrate_same_as_source(self, button=None):
-        self.load_metadata()
-        self.bitrate_entry.set_text(str(round(float(self.metadata[2]))))
 
     # Export
 
@@ -290,10 +295,62 @@ class MainWindow(Adw.Window):
         def run_in_thread():
             encode_start = time.time()
 
-            audioparams1 = f"-c:a libopus -b:a {self.bitrate_entry.get_text()}K -compression_level 10 -vbr " + "on" if self.vbr_switch.get_state() else "off"
-            audioparams2 = "-ac 2" if self.downmix_switch.get_state() else ""
+            try:
+                workers_specified = int(self.workers_entry.get_text())
+                workers = f"{workers_specified}"
+            except ValueError:
+                workers = "0"
 
-            audioparams = " ".join([audioparams1, audioparams2])
+            try:
+                audioparams1 = f"-c:a libopus -b:a {self.bitrate_entry.get_text()}K -compression_level 10 -vbr " + "on" if self.vbr_switch.get_state() else "off"
+                audioparams2 = "-ac 2" if self.downmix_switch.get_state() else ""
+
+                audioparams = " ".join([audioparams1, audioparams2])
+            except:
+                audioparams = "-c:a copy"
+
+            width = height = None
+
+            try:
+                width = int(self.resolution_width_entry.get_text())
+            except ValueError:
+                pass
+
+            try:
+                height = int(self.resolution_height_entry.get_text())
+            except ValueError:
+                pass
+
+            if width is not None and height is None:
+                height = -1
+            elif width is None and height is not None:
+                width = -1
+
+            if self.scaling_method.get_selected_item() == "Lanczos":
+                method = "lanczos"
+            elif self.scaling_method.get_selected_item() == "Mitchell":
+                method = "bicubic:param0=1/3:param1=1/3"
+            elif self.scaling_method.get_selected_item() == "Catrom":
+                method = "bicubic:param0=0:param1=1/2"
+            else:
+                method = "bicubic:param0=-1/2:param1=1/4"
+
+            try:
+                rav1e_custom = self.rav1e_entry.get_text()
+            except:
+                rav1e_custom = ""
+
+            try:
+                if 0 < height < 1920:
+                    tiles = " --tiles 4 " 
+            except:
+                try:
+                    if 0 < int(self.metadata[1]) < 1920:
+                        tiles = " --tiles 4 "
+                except:
+                    tiles = " --tiles 8 "
+                
+            rav1e_params = f"--speed {int(self.speed_scale.get_value())} --quantizer {int(self.quantizer_scale.get_value())} --threads 2 --keyint 0 --no-scene-detection" + tiles + rav1e_custom
 
             cmd = [
                 "av1an",
@@ -305,16 +362,26 @@ class MainWindow(Adw.Window):
                 "-c", "ffmpeg",
                 "-e", "rav1e",
                 "--photon-noise", f"{int(self.grain_scale.get_value())}",
-                "--chroma-noise",
                 "--force",
-                "--video-params", f"--tiles 1 -s {int(self.speed_scale.get_value())} --quantizer {int(self.quantizer_scale.get_value())} --threads 1 --no-scene-detection",
+                "--video-params", rav1e_params,
                 "--pix-format", "yuv420p10le",
                 "--audio-params", audioparams,
-                "-f", f"-vf scale={self.resolution_width_entry.get_text()}:{self.resolution_height_entry.get_text()} -sws_flags lanczos",
-                "-w", "0",
+                "-w", workers,
                 "-o", output,
             ]
 
+            if self.chroma_switch.get_active():
+                cmd.append("--chroma-noise")
+            
+            if width is not None or height is not None:
+                cmd.append("-f")
+                cmd.append(f'-vf scale={width}:{height}:flags={method}')
+
+            try:
+                cmd.extend(str(self.av1an_entry.get_text()).split())
+            except:
+                pass
+            
             print(" ".join(cmd))
             self.process = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                                      universal_newlines=True)
@@ -357,6 +424,7 @@ class MainWindow(Adw.Window):
             shutil.rmtree("av1an-cache")
             print("Killed av1an")
 
+
 class App(Adw.Application):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -369,7 +437,7 @@ class App(Adw.Application):
         quit_action = Gio.SimpleAction(name="quit")
         quit_action.connect("activate", self.quit)
         self.add_action(quit_action)
-        os.system("rav1e --version")
+        #os.system("rav1e --version")
 
     def on_activate(self, app):
         if first_open():
@@ -383,12 +451,12 @@ class App(Adw.Application):
         about = Adw.AboutWindow(transient_for=self.win,
                                 application_name="rAV1ator",
                                 application_icon="net.natesales.rAV1ator",
-                                developer_name="Nate Sales & Gianni Rosato",
+                                developer_name="Nate Sales, Gianni Rosato & Trix",
                                 version=info.version,
                                 copyright="Copyright © 2023 Nate Sales &amp; Gianni Rosato",
                                 license_type=Gtk.License.GPL_3_0,
-                                website="https://github.com/natesales/rAV1ator",
-                                issue_url="https://github.com/natesales/rAV1ator/issues")
+                                website="https://github.com/gianni-rosato/rAV1ator/issues",
+                                issue_url="https://github.com/gianni-rosato/rAV1ator/issues")
         # about.set_translator_credits(translators())
         about.set_developers(["Nate Sales <nate@natesales.net>","Gianni Rosato <grosatowork@proton.me>", "Trix <>"])
         about.set_designers(["Gianni Rosato <grosatowork@proton.me>", "Trix <>"])
@@ -398,7 +466,24 @@ class App(Adw.Application):
                 "AV1 Discord https://discord.gg/SjumTJEsFD",
             ]
         )
-        # about.add_acknowledgement_section()
+        about.add_acknowledgement_section(
+            ("Special thanks to the Av1an dev team"),
+            [
+                "Av1an Discord https://discord.gg/BwyQp2QX9h",
+            ]
+        )
+        about.add_acknowledgement_section(
+            ("Special thanks to the rav1e dev team"),
+            [
+                "rav1e repository https://github.com/xiph/rav1e",
+            ]
+        )
+        about.add_acknowledgement_section(
+            ("Software versions:"),
+            [
+                str(subprocess.check_output(["av1an", "--version"]).decode("utf-8").strip().splitlines()[0])+f"\n\n"+str(subprocess.check_output(["rav1e", "--version"]).decode("utf-8").strip().splitlines()[0]),
+            ]
+        )
         about.add_legal_section(
             title='Av1an',
             copyright='Copyright © 2023 Av1an',
@@ -420,5 +505,5 @@ class App(Adw.Application):
         exit()
 
 
-app = App(application_id="net.natesales.rAV1ator")
+app = App(application_id=app_id)
 app.run(sys.argv)

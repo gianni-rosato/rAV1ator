@@ -51,7 +51,26 @@
     </screenshot>
   </screenshots>
 
+  
   <releases>
+    <release version="1.1.0" date="2023-05-09">
+      <description>
+        <p>This version introduces a great amount of new features:
+          - Removed the "Match source" buttons and replaced by better default behavior
+          - Providing only the width or the height will automatically calculate the other one
+          - Scaling methods can be changed on the go thanks to a simple dropdown menu
+          - Warn the user when going over 100 on the quantizer scale
+          - Grain Synth was replaced for Photon Noise; a chroma noise tick box was added
+          - Introduction of a new "Advanced" tab
+          - Custom av1an and rav1e parameters entries
+          - Workers entry that changes the amount of workers accordingly
+          - If no audio bitrate is specified it copies the audio tracks from the source and grays out the WebM button
+          - Better encoder defaults
+          And some other minor tweaks. Enjoy this new rAV1ator version!
+        </p>
+      </description>
+    </release>
+
     <release version="1.0.0" date="2023-02-09">
       <description>
         <p>I know it has been a long time coming, but this time, we have a plethora of changes to report!
@@ -93,7 +112,7 @@
     </release>
   </releases>
 
-  <url type="homepage">https://github.com/gianni-rosato/aviator/tree/rAV1ator</url>
-  <url type="bugtracker">https://github.com/gianni-rosato/aviator/issues</url>
+  <url type="homepage">https://github.com/gianni-rosato/rAV1ator</url>
+  <url type="bugtracker">https://github.com/gianni-rosato/rAV1ator/issues</url>
   <url type="donation">https://github.com/gianni-rosato</url>
 </component>

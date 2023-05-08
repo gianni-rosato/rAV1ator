@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='rAV1ator',
-    version='1.0.0',
+    version='1.1.0',
     description='AV1/OPUS Encoder GUI',
     author='Gianni Rosato',
     author_email='grosatowork@proton.me',
