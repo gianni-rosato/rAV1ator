@@ -1,0 +1,23 @@
+#!/usr/bin/env python3
+import os
+import sys
+import gettext
+import logging
+
+AppDir = __file__.split('/app')[0]  # Directory which contains this app (detected during runtime)
+
+py_install_dir = AppDir + '/app/lib/python3.10/site-packages/'
+sys.path.insert(1, py_install_dir)
+
+localedir = AppDir + '/app/share/locale'
+gettext.bindtextdomain('rAV1ator', localedir)
+gettext.textdomain('rAV1ator')
+_ = gettext.gettext
+
+# Terminal Text Styles
+style_normal = '\033[0m'
+style_bold   = '\033[1m'
+
+logging.basicConfig(format=f'{style_bold}%(levelname)s:{style_normal} %(message)s')
+
+import rAV1ator

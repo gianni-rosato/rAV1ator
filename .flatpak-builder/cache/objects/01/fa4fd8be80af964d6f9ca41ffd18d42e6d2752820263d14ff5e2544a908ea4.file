@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <content_rating type="oars-1.1"/>
+
+  <id>net.natesales.rAV1ator</id>
+  <launchable type="desktop-id">net.natesales.rAV1ator.desktop</launchable>
+
+  <name>rAV1ator</name>
+  <summary>Your Video Copilot: AV1/OPUS Video Encoder</summary>
+
+  <description>
+    <p>
+      rAV1ator enables simple, easy-to-use video encoding for the word's most advanced open video codec, AV1. Encode your favorite media into super efficient files with incredible quality per bit, powered by the SVT-AV1 production encoder with Opus for audio encoding. The sky's the limit for your old home video collection &amp; large 4k smartphone videos, and you can fly in style with a beautiful libadwaita interface. Take off with rAV1ator!
+    </p>
+  </description>
+
+  <custom>
+    <value key="GnomeSoftware::key-colors">[(237, 51, 59), (220, 138, 221)]</value>
+  </custom>
+
+  <categories>
+    <category>GNOME</category>
+    <category>GTK</category>
+    <category>System</category>
+  </categories>
+
+  <supports>
+    <control>pointing</control>
+    <control>keyboard</control>
+    <control>touch</control>
+  </supports>
+
+  <provides>
+    <binary>rAV1ator</binary>
+  </provides>
+
+  <developer_name>Gianni Rosato</developer_name>
+  <update_contact>grosatowork@proton.me</update_contact>
+
+  <screenshots>
+    <screenshot type="default">
+      <image>https://raw.githubusercontent.com/natesales/rAV1ator/main/assets/video.png</image>
+    </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/natesales/rAV1ator/main/assets/audio.png</image>
+    </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/natesales/rAV1ator/main/assets/export.png</image>
+    </screenshot>
+  </screenshots>
+
+  
+  <releases>
+    <release version="1.1.0" date="2023-05-09">
+      <description>
+        <p>This version introduces a great amount of new features:
+          - Removed the "Match source" buttons and replaced by better default behavior
+          - Providing only the width or the height will automatically calculate the other one
+          - Scaling methods can be changed on the go thanks to a simple dropdown menu
+          - Warn the user when going over 100 on the quantizer scale
+          - Grain Synth was replaced for Photon Noise; a chroma noise tick box was added
+          - Introduction of a new "Advanced" tab
+          - Custom av1an and rav1e parameters entries
+          - Workers entry that changes the amount of workers accordingly
+          - If no audio bitrate is specified it copies the audio tracks from the source and grays out the WebM button
+          - Better encoder defaults
+          And some other minor tweaks. Enjoy this new rAV1ator version!
+        </p>
+      </description>
+    </release>
+
+    <release version="1.0.0" date="2023-02-09">
+      <description>
+        <p>I know it has been a long time coming, but this time, we have a plethora of changes to report!
+          - We've switched our encoding framework to the Rust-based rav1e encoder alongside a video chunking tool called av1an, also written in Rust
+          - Support for more buttons than just the close button in the header bar
+          - Chroma grain synthesis parameter
+          - New tooltips, alongside fixes for the old ones
+          - Fully functional progress bar
+          - A "Stop Encode" button
+          - Optionally downmix audio channels to stereo (for Surround sources)
+          - New About window using AdwAboutWindow
+          - Better defaults
+          - Better Welcome window
+          - Better notifications
+          And probably more minor tweaks that I'm forgetting. Enjoy taking off alongside our shiny new rAV1ator!
+        </p>
+      </description>
+    </release>
+    
+    <release version="0.1.2" date="2022-10-23">
+      <description>
+        <p>Fix: typos</p>
+      </description>
+    </release>
+
+    <release version="0.1.1" date="2022-10-20">
+      <description>
+        <p>Fix: support multiple streams</p>
+        <p>Fix: add encode time to end notification</p>
+        <p>Fix: enable VBR by default</p>
+        <p>Fix: tooltip text typo</p>
+      </description>
+    </release>
+
+    <release version="0.1.0" date="2022-09-08">
+      <description>
+        <p>Initial release</p>
+      </description>
+    </release>
+  </releases>
+
+  <url type="homepage">https://github.com/gianni-rosato/rAV1ator</url>
+  <url type="bugtracker">https://github.com/gianni-rosato/rAV1ator/issues</url>
+  <url type="donation">https://github.com/gianni-rosato</url>
+</component>

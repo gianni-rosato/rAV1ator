@@ -1,0 +1,31 @@
+[Application]
+name=net.natesales.rAV1ator
+runtime=org.gnome.Platform/x86_64/44
+sdk=org.gnome.Sdk/x86_64/44
+command=rAV1ator
+
+[Extension org.freedesktop.Sdk.Extension.llvm14]
+directory=llvm14
+no-autodownload=true
+add-ld-path=.
+version=22.08
+
+[Extension org.freedesktop.Sdk.Extension.rust-stable]
+directory=rust-stable
+no-autodownload=true
+add-ld-path=.
+version=22.08
+
+[Context]
+shared=ipc;
+sockets=x11;wayland;fallback-x11;
+devices=dri;
+filesystems=host;
+
+[Extension net.natesales.rAV1ator.Debug]
+directory=lib/debug
+autodelete=true
+no-autodownload=true
+
+[Build]
+built-extensions=net.natesales.rAV1ator.Debug;

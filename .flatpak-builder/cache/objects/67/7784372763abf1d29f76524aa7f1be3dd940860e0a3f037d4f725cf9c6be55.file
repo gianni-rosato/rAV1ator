@@ -1,0 +1,14 @@
+prefix=/app
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include/vapoursynth
+
+Name: vapoursynth-script
+Description: Library for interfacing VapourSynth with Python
+Version: 62
+
+Requires: vapoursynth
+Requires.private: python-3.10
+Libs: -L${libdir} -lvapoursynth-script
+Libs.private: -lpython3.10
+Cflags: -I${includedir}
