@@ -1,5 +1,0 @@
-[Runtime]
-name=net.natesales.rAV1ator.Debug
-
-[ExtensionOf]
-ref=app/net.natesales.rAV1ator/x86_64/master
