@@ -1,5 +1,5 @@
 project('rAV1ator',
-  version: '1.1.0',
+  version: '1.1.1',
   meson_version: '>= 0.59',
 )
 

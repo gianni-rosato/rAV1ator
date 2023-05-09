@@ -183,6 +183,7 @@ class MainWindow(Adw.Window):
 
     # Export page
     output_file_label = Gtk.Template.Child()
+    warning_image_webm = Gtk.Template.Child()
     container_mkv_button = Gtk.Template.Child()
     container_webm_button = Gtk.Template.Child()
     container = "mkv"
@@ -232,6 +233,7 @@ class MainWindow(Adw.Window):
     @Gtk.Template.Callback()
     def empty_or_not_empty(self, entry):
         if self.bitrate_entry.get_text() == "":
+            self.container_mkv("clicked")
             self.container_webm_button.set_sensitive(False)
         else:
             self.container_webm_button.set_sensitive(True)
@@ -273,12 +275,14 @@ class MainWindow(Adw.Window):
     def container_mkv(self, button):
         self.container_webm_button.set_has_frame(False)
         self.container_mkv_button.set_has_frame(True)
+        self.warning_image_webm.set_visible(False)
         self.container = "mkv"
 
     @Gtk.Template.Callback()
     def container_webm(self, button):
         self.container_mkv_button.set_has_frame(False)
         self.container_webm_button.set_has_frame(True)
+        self.warning_image_webm.set_visible(True)
         self.container = "webm"
 
     @Gtk.Template.Callback()
@@ -302,12 +306,13 @@ class MainWindow(Adw.Window):
             except ValueError:
                 workers = "0"
 
-            try:
-                audioparams1 = f"-c:a libopus -b:a {self.bitrate_entry.get_text()}K -compression_level 10 -vbr " + "on" if self.vbr_switch.get_state() else "off"
-                audioparams2 = "-ac 2" if self.downmix_switch.get_state() else ""
-
-                audioparams = " ".join([audioparams1, audioparams2])
-            except:
+            if self.bitrate_entry.get_text() != "":
+                audioparams = f"-c:a libopus -b:a {int(self.bitrate_entry.get_text())}k"
+                if not self.vbr_switch.get_state():
+                    audioparams = " ".join([audioparams, "-vbr off"])
+                if self.downmix_switch.get_state():
+                    audioparams = " ".join([audioparams, "-ac 2"])  
+            else:
                 audioparams = "-c:a copy"
 
             width = height = None
@@ -323,9 +328,9 @@ class MainWindow(Adw.Window):
                 pass
 
             if width is not None and height is None:
-                height = -1
+                height = -2
             elif width is None and height is not None:
-                width = -1
+                width = -2
 
             if self.scaling_method.get_selected_item() == "Lanczos":
                 method = "lanczos"
@@ -356,11 +361,30 @@ class MainWindow(Adw.Window):
             else:
                 threads = " --threads 1 "
                 
-            rav1e_params = f"--speed {int(self.speed_scale.get_value())} --quantizer {int(self.quantizer_scale.get_value())} --keyint 0 --no-scene-detection" + threads + tiles + rav1e_custom
+            rav1e_params = f"--speed {int(self.speed_scale.get_value())} --quantizer {int(self.quantizer_scale.get_value())} --keyint 0 --no-scene-detection" + threads + tiles + " " + rav1e_custom
+
+            if self.rav1e_entry.get_text() != "": # function to remove duplicates in the rav1e parameters list
+                rav1e_dupl2_list = ["--speed", "--quantizer", "--keyint", "--tiles", "--threads"]
+                rav1e_dupl_list = ["--no-scene-detection"]
+                
+                rav1e_params_list = rav1e_params.split()
+                copy = rav1e_params_list[:]
+                i = 0
+                while i < len(rav1e_params_list):
+                    for j in range(i+1,len(rav1e_params_list)):
+                        if rav1e_params_list[i] == rav1e_params_list[j] and rav1e_params_list[i] in rav1e_dupl2_list: # remove duplicates for "two-string" parameters e.g --threads 4
+                            copy[j] = ""
+                            copy[i+1] = rav1e_params_list[j+1]
+                            copy[j+1] = ""
+                        if rav1e_params_list[i] == rav1e_params_list[j] and rav1e_params_list[i] in rav1e_dupl_list: # remove duplicates for "single-string" parameters
+                            copy[j] = ""
+
+                    i+=1
+
+                rav1e_params = " ".join(list(dict.fromkeys((" ".join(copy)).split())))
 
             cmd = [
                 "av1an",
-                "-i", self.source_file_absolute,
                 "-y",
                 "--temp", "av1an-cache",
                 "--split-method", "av-scenechange",
@@ -369,25 +393,44 @@ class MainWindow(Adw.Window):
                 "-e", "rav1e",
                 "--photon-noise", f"{int(self.grain_scale.get_value())}",
                 "--force",
-                "--video-params", rav1e_params,
                 "--pix-format", "yuv420p10le",
-                "--audio-params", audioparams,
-                "-w", workers,
-                "-o", output,
-            ]
+                "-w", workers
+            ] # some parameters are added later to avoid errors introduced by the "overwrite av1an parameters" user entry
 
             if self.chroma_switch.get_active():
                 cmd.append("--chroma-noise")
-            
-            if width is not None or height is not None:
-                cmd.append("-f")
-                cmd.append(f'-vf scale={width}:{height}:flags={method}')
 
             try:
                 cmd.extend(str(self.av1an_entry.get_text()).split())
             except:
                 pass
             
+            if self.av1an_entry.get_text() != "": # function to remove duplicates in the Av1an parameters list
+                av1an_dupl2_list = ["--temp", "--split-method", "-m", "-c", "--pix-format", "--audio-params", "-f", "--photon-noise", "-w"]
+                av1an_dupl_list = ["-y", "--force"]
+                if self.chroma_switch.get_active():
+                    av1an_dupl_list.append("--chroma-noise")
+                copy = cmd[:]
+                i = 0
+                while i < len(cmd):
+                    for j in range(i+1,len(cmd)):
+                        if cmd[i] == cmd[j] and cmd[i] in av1an_dupl2_list: # remove duplicates for "two-string" parameters e.g --photon-noise 4
+                            copy[j] = ""
+                            copy[i+1] = cmd[j+1]
+                            copy[j+1] = ""
+                        if cmd[i] == cmd[j] and cmd[i] in av1an_dupl_list: # remove duplicates for "single-string" parameters e.g --chroma-noise
+                            copy[j] = ""
+                    i+=1
+            
+                cmd = (" ".join(copy)).split()
+            
+            cmd_f = ["--video-params", rav1e_params, "--audio-params", audioparams, "-i", self.source_file_absolute, "-o", output] # the remaining params are added
+            cmd.extend(cmd_f)
+
+            if width is not None or height is not None:
+                cmd.append("-f")
+                cmd.append(f" -vf scale={width}:{height}:flags={method} ")
+
             print(" ".join(cmd))
             self.process = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                                      universal_newlines=True)

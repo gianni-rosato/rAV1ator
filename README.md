@@ -61,7 +61,7 @@ Hovering over most user configurable options in rAV1ator will produce a helpful 
 
 <img src="assets/rAV1ator_video.webp" alt="rAV1ator Video Settings" width=480/>
 
-When you load a video file into rAV1ator, resolution & audio bitrate are set to match the source as closely as possible. rAV1ator's rav1e speed preset is set to 6 by default, with a default Quantizer level of 80. You can set the Quantizer level from 1 to 255 using the slider, with larger numerical values indicating smaller filesize at the expense of visual quality. Speed 6 offers a good balance between speed & compression efficiency at any Quantizer level; higher values will encode faster at the expense of visual quality, while lower values will encode more efficiently but more slowly.
+When you load a video file into rAV1ator, resolution & audio bitrate are set to match the source as closely as possible. rAV1ator's rav1e speed preset is set to 8 by default, with a default Quantizer level of 80. You can set the Quantizer level from 1 to 255 using the slider, with larger numerical values indicating smaller filesize at the expense of visual quality. Speed 8 offers a good balance between speed & compression efficiency at any Quantizer level; higher values will encode faster at the expense of visual quality, while lower values will encode more efficiently but slower.
 
 The Photon Noise slider allows you to add artifical grain to your video to mimic its natural grain, which applies the artificial grain at decode time as a filter which makes it easier to encode grainy videos at high fidelity. The grain levels are based on ISO noise, so 1 would be equal to ISO 100, 24 equal to ISO 2400, etc.
 
@@ -69,7 +69,7 @@ The Photon Noise slider allows you to add artifical grain to your video to mimic
 
 <img src="assets/rAV1ator_audio.webp" alt="rAV1ator Audio Settings" width=480/>
 
-Audio is only reencoded if the bitrate is set to be the same as the source audio; otherwise it is copied, if you select MKV as the output file format. Audio can be encoded to Opus, which is a highly efficient free audio codec that is often more efficient than competitors like AAC & MP3 audio. Opus reaches audio transparency at around 128kbps for stereo audio.
+Audio is only reencoded if a bitrate is specified; otherwise it is copied. Audio can be encoded to Opus, which is a highly efficient free audio codec that is often more efficient than competitors like AAC & MP3 audio. Opus reaches audio transparency at around 128kbps for stereo audio.
 
 ### Advanced
 
@@ -93,9 +93,11 @@ These are considered bugs, and we are working on fixing them ASAP. In the meanti
 In the future, we would like to:
 - Add a queue, potentially
 - Revamp outputting a file
+- Get extra progress &amp error info
+- Implement Av1an's --resume and --zones functionality
 
 Let us know if you have any issues in our Issues section. Thank you for using rAV1ator!
 
 ## Credits
 
-Actively developed by [Gianni Rosato](https://github.com/gianni-rosato/), and [Trix](https://www.reddit.com/user/NekoTrix/)
+Actively developed by [Gianni Rosato](https://github.com/gianni-rosato/), and [Trix](https://discordapp.com/users/237665944942411777)

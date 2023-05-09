@@ -53,6 +53,19 @@
 
   
   <releases>
+    <release version="1.1.1" date="2023-05-09">
+      <description>
+        <p>This version introduces a few fixes:
+          - The Av1an and rav1e custom parameters box are now bahaving as expected
+          - Fixed concatenation error when the "Downmix to Stereo" box was enabled
+          - Fixed encoding error due to the calculated resolution being a mean number 
+          - Automatically switches back to MKV when the audio bitrate is removed from the entry
+          - New warning icon when the WebM container is selected
+          And some other minor tweaks.
+        </p>
+      </description>
+    </release>
+
     <release version="1.1.0" date="2023-05-09">
       <description>
         <p>This version introduces a great amount of new features:
