@@ -45,9 +45,9 @@ Third party packaging formats are not officially supported by rAV1ator, and if y
 
 AV1 aims to be more efficient than HEVC & VP9 by around 30%, and more efficient than h.264 by 50%. Traditionally, a lot of AV1 encoder implementations have been pretty slow compared to competing codecs' encoders, but the Rust-based [rav1e](https://github.com/xiph/rav1e) encoder has seen decent increases in speed recently and is improving more every day. We decided to use rav1e in order to give users a memory-safe AV1 encoder implementation that prioritizes visual quality &amp; "just works," for the most part.
 
-One downside of rav1e is that despite being generally quicker than the libaom AV1 reference encoder, it is quite a bit slower than the SVT-AV1 production encoder. To combat this while maintaining high visual quality, rAV1ator utilizes a tool called [Av1an](https://github.com/master-of-zen/Av1an) that is capable of detecting scene changes in a video & splitting the video into multiple shorter videos (chunks) based on those scene changes, then encoding these chunks in parallel. This works especially well with longer videos. rAV1ator will determine the number of chunks to use based on Av1an's internal chunk allocator, which calculates the number of chunks your system can handle based on your logical CPU cores & the amount of RAM you have available. Encoding speed scales with the number of chunks you have, so more chunks is faster but harder on your CPU & memory.
+One downside of rav1e is that despite being generally quicker than the libaom AV1 reference encoder, it is quite a bit slower than the SVT-AV1 production encoder. To combat this while maintaining high visual quality, rAV1ator utilizes a tool called [Av1an](https://github.com/master-of-zen/Av1an) that is capable of detecting scene changes in a video & splitting the video into multiple shorter videos (chunks) based on those scene changes, then encoding these chunks in parallel. This works especially well with longer videos. rAV1ator will determine the number of chunks to use based on Av1an's internal chunk allocator, which calculates the number of chunks your system can handle based on your logical CPU cores & the amount of RAM you have available. This can be manually specified as well, if you'd like to push your system harder or allow encoding to take up less system resources. Encoding speed scales with the number of chunks you have, so more chunks is faster but harder on your CPU & memory.
 
-rAV1ator comes bundled with its own version of ffmpeg that is capable decoding videos to detect source information, upscaling & downscaling videos with a sharp scaling algorithm called lanczos, & encoding audio using the Opus audio codec via libopus.
+rAV1ator comes bundled with its own version of ffmpeg that is capable decoding videos to detect source information, upscaling & downscaling videos with a number of user configurable scaling algorithms, & encoding audio using the Opus audio codec via libopus.
 
 ## Why no Flathub?
 
@@ -69,28 +69,33 @@ The Grain Synth slider allows you to add artifical grain to your video to mimic 
 
 <img src="assets/rAV1ator_audio.webp" alt="rAV1ator Audio Settings" width=480/>
 
-Audio is reencoded even if the bitrate is set to be the same as the source audio. Audio is encoded to Opus, which is a highly efficient free audio codec that is often more efficient than competitors like AAC & MP3 audio. Because of Opus's incredible efficiency, audio tracks will be encoded at 48kbps if no source bitrate is detected. Opus reaches audio transparency at around 128kbps.
+Audio is only reencoded if the bitrate is set to be the same as the source audio; otherwise it is copied, if you select MKV as the output file format. Audio can be encoded to Opus, which is a highly efficient free audio codec that is often more efficient than competitors like AAC & MP3 audio. Opus reaches audio transparency at around 128kbps for stereo audio.
+
+### Advanced
+
+<img src="assets/rAV1ator_advanced.webp" alt="rAV1ator Advanced Settings" width=480/>
+
+Av1an is a complex tool, and rav1e is a complex encoder. There are probably certain settings that you'd prefer to set manually if you're well versed in either utility, so the option to do so for both is offered here. Your custom settings will override the GUI's parameters & defaults. The amount of workers can also be manually specified here.
 
 ### Output
 
 <img src="assets/rAV1ator_output.webp" alt="rAV1ator Output UI" width=480/>
 
-The container your video is stored in is associated with the file extension. rAV1ator offers two options for video output: the Matroska video container & the WebM container. The open-source Matroska container (.MKV) is rAV1ator's default container, a universal multimedia container with widespread video &amp; audio support. WebM is designed for web compatibility &amp; may break subtitles. Both work out of the box with rAV1ator's AV1 video & Opus audio formats.
+The container your video is stored in is associated with the file extension. rAV1ator offers two options for video output: the Matroska video container & the WebM container. The open-source Matroska container (.MKV) is rAV1ator's default container, a universal multimedia container with widespread video &amp; audio support. WebM is designed for web compatibility &amp; may break subtitles. Both work out of the box with rAV1ator's AV1 video & Opus audio formats, although WebM is disabled if no audio bitrate is set due to the fact that copying the audio stream doesn't guarantee its compatibility with the WebM container.
 
 ## Roadmap & Limitations
 
-Currently, rAV1ator cannot handle:
+Currently, rAV1ator may encounter issues with:
 - Video streams with subtitles encoding to .webm
 
 These are considered bugs, and we are working on fixing them ASAP. In the meantime, we'd prefer you choose the .mkv container if you are having trouble with subtitles.
 
 In the future, we would like to:
 - Add a queue, potentially
-- Add an option to copy your audio without reencoding (that disables WebM output)
 - Revamp outputting a file
 
 Let us know if you have any issues in our Issues section. Thank you for using rAV1ator!
 
 ## Credits
 
-Actively developed by [Nate Sales](https://github.com/natesales/) & [Gianni Rosato](https://github.com/gianni-rosato/)
+Actively developed by [Gianni Rosato](https://github.com/gianni-rosato/), and [Trix](https://www.reddit.com/user/NekoTrix/)
