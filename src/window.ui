@@ -62,8 +62,7 @@
                                                 <property name="margin-top">32</property>
                                                 <property name="label" translatable="yes">Open</property>
                                                 <property name="halign">center</property>
-                                                <property name="tooltip-text">Open your source media
-Multiple inputs and queuing are planned in the future.</property>
+                                                <property name="tooltip-text">Open your source media.</property>
                                                 <!-- <property name="icon-name">document-open-symbolic</property> -->
                                                 <signal name="clicked" handler="open_source_file" swapped="no" />
                                                 <style>
@@ -79,6 +78,7 @@ Multiple inputs and queuing are planned in the future.</property>
                                                             <object class="AdwActionRow">
                                                                 <property name="title" translatable="yes">_Source File</property>
                                                                 <property name="use-underline">true</property>
+                                                                <property name="tooltip-text">Displays the path to the source file.</property>
                                                                 <child>
                                                                     <object class="GtkLabel" id="source_file_label">
                                                                         <property name="label" translatable="yes"></property>
@@ -91,9 +91,7 @@ Multiple inputs and queuing are planned in the future.</property>
                                                             <object class="AdwActionRow">
                                                                 <property name="title" translatable="yes">_Resolution</property>
                                                                 <property name="use-underline">true</property>
-                                                                <property name="tooltip-text">Sets the output resolution.
-Leave untouched to keep the source resolution.
-Only providing one option will automatically calculate the other one.</property>
+                                                                <property name="tooltip-text">Sets the output resolution. Leave untouched to preserve the source resolution based on the source's aspect ratio. Providing one option will automatically calculate the other.</property>
                                                                 <child>
                                                                     <object class="GtkBox">
                                                                         <!-- <child>
@@ -127,8 +125,8 @@ Only providing one option will automatically calculate the other one.</property>
                                                                                 <child>
                                                                                     <object class="GtkDropDown" id="scaling_method">
                                                                                         <property name="tooltip-text">Change the downscaling kernel.
-Catrom (Bicubic b=0 c=1/2) is sharp but may introduce ringing.
-Lanczos is an alternative to Catrom.
+Catrom (Bicubic b=0 c=1/2) is sharp, but may introduce ringing.
+Lanczos is sharper than Catrom with more potential ringing.
 Mitchell (Bicubic b=1/3 c=1/3) is softer than both.
 BicubicDidee (Bicubic b=-1/2 c=1/4) strikes a good balance between sharpness and not introducing ringing.
 Leave untouched if unsure.                                                              </property>
@@ -155,8 +153,7 @@ Leave untouched if unsure.                                                      
                                                         <child>
                                                             <object class="AdwActionRow">
                                                                 <property name="title" translatable="yes">_Quantizer</property>
-                                                                <property name="tooltip-text">The quantizer's value determines the size &amp; quality of your output.
-Higher values mean lower file size &amp; quality while lower values create larger, higher-quality videos.</property>
+                                                                <property name="tooltip-text">The quantizer's value determines the size &amp; quality of your output. Higher values mean lower file size &amp; quality while lower values create larger, higher-quality videos.</property>
                                                                 <property name="use-underline">true</property>
                                                                 <child>
                                                                     <object class="GtkBox">
@@ -167,8 +164,7 @@ Higher values mean lower file size &amp; quality while lower values create large
                                                                             <object class="GtkImage" id="warning_image">
                                                                                 <property name="icon-name">dialog-warning</property>
                                                                                 <property name="visible">false</property>
-                                                                                <property name="tooltip-text" translatable="yes">A value above 100 isn't recommended, you will likely experience a noticeable quality degradation.
-Consider adjusting the value.</property>
+                                                                                <property name="tooltip-text" translatable="yes">Values above 100 may introduce noticeable quality degradation.</property>
                                                                             </object>
                                                                         </child>
                                                                         <child>
@@ -198,11 +194,18 @@ Consider adjusting the value.</property>
                                                         <child>
                                                             <object class="AdwActionRow">
                                                                 <property name="title" translatable="yes">_Speed</property>
-                                                                <property name="tooltip-text">This value determines how hard your system will work to encode your video.
-Lower values mean your system will take longer to encode the video, but the files will be higher quality.
-Higher values will encode less efficiently, but much more quickly.
-8 is a great start if you are discovering the encoder.</property>
+                                                                <property name="tooltip-text">This value determines how hard your system will work to encode your video. Lower values mean your system will take longer to encode the video, but the files will be higher quality. Higher values will encode less efficiently, but much more quickly.</property>
                                                                 <property name="use-underline">true</property>
+                                                                <child>
+                                                                    <object class="GtkCheckButton" id="multithread_switch">
+                                                                        <property name="active">True</property>
+                                                                        <property name="label">Multithreading</property>
+                                                                        <property name="valign">center</property>
+                                                                        <property name="hexpand">False</property>
+                                                                        <property name="tooltip-text">Enables each rav1e instance to use two threads. Disable if you do not have a multithreaded CPU.</property>
+                                                                        <!-- <property name="active" bind-source="LoginAdvancedDialog" bind-property="autodiscovery" bind-flags="sync-create|bidirectional" /> -->
+                                                                    </object>
+                                                                </child>
                                                                 <child>
                                                                     <object class="GtkScale" id="speed_scale">
                                                                         <property name="halign">end</property>
@@ -228,10 +231,7 @@ Higher values will encode less efficiently, but much more quickly.
                                                         <child>
                                                             <object class="AdwActionRow">
                                                                 <property name="title" translatable="yes">_Photon Noise</property>
-                                                                <property name="tooltip-text">This value determines how much artificial grain will be applied to your video.
-Values are equivalent to ISO; 1 would be equal to ISO 100, 24 would be ISO 2400, etc.
-It is not recommended to disable photon noise entirely, it serves a dithering purpose to avoid banding introduced by most media players.
-Chroma enables the use of chroma noise. By default, only luma noise is used. Leave unchecked if unsure.</property>
+                                                                <property name="tooltip-text">This value determines how much artificial grain will be applied to your video. Values are equivalent to camera ISO; 1 would be equal to ISO 100, 24 would be ISO 2400, etc. It is not recommended to disable photon noise as it will help avoid banding, even on sources without grain.</property>
                                                                 <property name="use-underline">true</property>
                                                                 <child>
                                                                     <object class="GtkBox">
@@ -244,6 +244,7 @@ Chroma enables the use of chroma noise. By default, only luma noise is used. Lea
                                                                                 <property name="label">Chroma</property>
                                                                                 <property name="valign">center</property>
                                                                                 <property name="hexpand">False</property>
+                                                                                <property name="tooltip-text">Enables the use of chroma noise. By default, only luma noise is used. Leave unchecked if unsure.</property>
                                                                                 <!-- <property name="active" bind-source="LoginAdvancedDialog" bind-property="autodiscovery" bind-flags="sync-create|bidirectional" /> -->
                                                                             </object>
                                                                         </child>
@@ -301,9 +302,11 @@ Chroma enables the use of chroma noise. By default, only luma noise is used. Lea
                                                             <object class="AdwActionRow">
                                                                 <property name="title" translatable="yes">_Bitrate</property>
                                                                 <property name="use-underline">true</property>
-                                                                <property name="tooltip-text">Sets the audio bitrate to a value in kbps. Higher values mean better quality at the expense of filesize.
-We recommend a value between 32 &amp; 128 for stereo audio, between 180 &amp; 256 for 5.1 Surround, &amp; >256 for 7.1 Surround.
-If no value is specified, the source audio tracks will be copied over.</property>
+                                                                <property name="tooltip-text">Sets the target audio bitrate to a value in kbps for Opus transcoding. Higher values mean better quality at the expense of filesize. Recommended values for nearly transparent quality are:
+Stereo: 32 (low) to 128 (high)
+5.1 Surround: 224
+7.1 Surround: 336
+Going much higher than the recommended values won't offer significant gain. If no value is specified, the source audio will be copied untouched.</property>
                                                                 <child>
                                                                     <!-- <child>
                                                                             <object class="GtkLabel">
@@ -335,8 +338,7 @@ If no value is specified, the source audio tracks will be copied over.</property
                                                             <object class="AdwActionRow">
                                                                 <property name="title" translatable="yes">_Variable Bit Rate</property>
                                                                 <property name="use-underline">true</property>
-                                                                <property name="tooltip-text">Allows Opus to vary the audio bitrate based on the complexity of the audio.
-It is highly recommended to leave this enabled.</property>
+                                                                <property name="tooltip-text">Allows Opus to vary the audio bitrate based on the complexity of the audio. It is highly recommended to leave this enabled.</property>
                                                                 <child>
                                                                     <object class="GtkSwitch" id="vbr_switch">
                                                                         <property name="active">True</property>
@@ -351,7 +353,7 @@ It is highly recommended to leave this enabled.</property>
                                                             <object class="AdwActionRow">
                                                                 <property name="title" translatable="yes">_Downmix to Stereo</property>
                                                                 <property name="use-underline">true</property>
-                                                                <property name="tooltip-text">Mixes audio inputs with more than two channels (5.1 Surround, 7.1 Surround, etc) down to two audio channels.</property>
+                                                                <property name="tooltip-text">Mixes audio inputs with more than two channels (5.1 Surround, 7.1 Surround, etc) down to stereo.</property>
                                                                 <child>
                                                                     <object class="GtkSwitch" id="downmix_switch">
                                                                         <property name="active">False</property>
@@ -391,8 +393,7 @@ It is highly recommended to leave this enabled.</property>
                                                             <object class="AdwActionRow">
                                                                 <property name="title" translatable="yes">_Custom Av1an parameters</property>
                                                                 <property name="use-underline">true</property>
-                                                                <property name="tooltip-text">You can add in this text field parameters to pass directly to Av1an.
-It will overwrite any existing parameter used, so proceed with caution.</property>
+                                                                <property name="tooltip-text">Specify parameters to pass directly to Av1an. This will overwrite existing parameters.</property>
                                                                 <child>
                                                                     <!-- <child>
                                                                             <object class="GtkLabel">
@@ -404,11 +405,11 @@ It will overwrite any existing parameter used, so proceed with caution.</propert
                                                                             </object>
                                                                         </child> -->
                                                                     <object class="GtkBox">
-                                                                        <property name="margin-top">8</property>
-                                                                        <property name="margin-bottom">8</property>
+                                                                        <property name="margin-top">10</property>
+                                                                        <property name="margin-bottom">10</property>
                                                                         <child>
                                                                             <object class="GtkEntry" id="av1an_entry">
-                                                                                <property name="width-request">460</property>
+                                                                                <property name="width-request">420</property>
                                                                                 <!--property name="height-request">200</property-->
                                                                                 <property name="placeholder-text" translatable="yes">Overwrite default Av1an parameters</property>
                                                                             </object>
@@ -422,8 +423,7 @@ It will overwrite any existing parameter used, so proceed with caution.</propert
                                                             <object class="AdwActionRow">
                                                                 <property name="title" translatable="yes">_Custom rav1e parameters</property>
                                                                 <property name="use-underline">true</property>
-                                                                <property name="tooltip-text">You can add in this text field parameters to pass directly to rav1e.
-It will overwrite any existing parameter used, so proceed with caution.</property>
+                                                                <property name="tooltip-text">Specify parameters to pass directly to rav1e. This will overwrite existing parameters.</property>
                                                                 <child>
                                                                     <!-- <child>
                                                                             <object class="GtkLabel">
@@ -435,11 +435,11 @@ It will overwrite any existing parameter used, so proceed with caution.</propert
                                                                             </object>
                                                                         </child> -->
                                                                     <object class="GtkBox">
-                                                                        <property name="margin-top">8</property>
-                                                                        <property name="margin-bottom">8</property>
+                                                                        <property name="margin-top">10</property>
+                                                                        <property name="margin-bottom">10</property>
                                                                         <child>
                                                                             <object class="GtkEntry" id="rav1e_entry">
-                                                                                <property name="width-request">460</property>
+                                                                                <property name="width-request">420</property>
                                                                                 <!--property name="height-request">200</property-->
                                                                                 <property name="placeholder-text" translatable="yes">Overwrite default rav1e parameters</property>
                                                                             </object>
@@ -454,9 +454,7 @@ It will overwrite any existing parameter used, so proceed with caution.</propert
                                                             <object class="AdwActionRow">
                                                                 <property name="title" translatable="yes">_Workers</property>
                                                                 <property name="use-underline">true</property>
-                                                                <property name="tooltip-text">Sets the number of workers i.e the number of instances that will be run in parallel to accelerate encoding.
-Higher values come at the cost of higher memory usage. The default worker amount is calculated with your hardware specs.
-Going any higher is useless, however you may want to reduce the number of workers if your encounter crashes.</property>
+                                                                <property name="tooltip-text">Sets the number of encoding instances that will be run in parallel to accelerate encoding on multicore CPUs. Higher values come at the cost of higher memory usage. Worker quantity is calculated heuristically based on your hardware specs by if left blank. Try reducing the number of workers if you encounter crashes.</property>
                                                                 <child>
                                                                     <!-- <child>
                                                                             <object class="GtkLabel">
@@ -547,9 +545,7 @@ Going any higher is useless, however you may want to reduce the number of worker
                                                             <object class="AdwActionRow">
                                                                 <property name="title" translatable="yes">_Container</property>
                                                                 <property name="use-underline">true</property>
-                                                                <property name="tooltip-text">The container your video is stored in, which is associated with the file extension.
-MKV is a universal video container with widespread support, while WebM is designed for web compatibility &amp; may break subtitles.
-WebM cannot be selected if the audio isn't transcoded to Opus due to the container design.</property>
+                                                                <property name="tooltip-text">The container your video is stored in, which is associated with the file extension. MKV is a universal video container with widespread support, while WebM is designed for web compatibility &amp; may break subtitles. WebM cannot be selected unless audio bitrate is specified to prevent audio copy.</property>
                                                                 <child>
                                                                     <object class="GtkBox">
                                                                         <property name="margin-top">10</property>
@@ -583,6 +579,7 @@ WebM cannot be selected if the audio isn't transcoded to Opus due to the contain
                                             <object class="GtkButton" id="encode_button">
                                                 <property name="label" translatable="yes">Encode</property>
                                                 <property name="halign">center</property>
+                                                <property name="tooltip-text">Begin encoding! Watch the progress bar to see how quickly your encode is progressing.</property>
                                                 <signal name="clicked" handler="start_export" swapped="no" />
                                                 <!-- <property name="icon-name">document-open-symbolic</property> -->
                                                 <style>

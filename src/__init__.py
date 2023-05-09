@@ -166,6 +166,7 @@ class MainWindow(Adw.Window):
     scaling_method = Gtk.Template.Child()
     warning_image = Gtk.Template.Child()
     quantizer_scale = Gtk.Template.Child()
+    multithread_switch = Gtk.Template.Child()
     speed_scale = Gtk.Template.Child()
     chroma_switch = Gtk.Template.Child()
     grain_scale = Gtk.Template.Child()
@@ -349,8 +350,13 @@ class MainWindow(Adw.Window):
                         tiles = " --tiles 4 "
                 except:
                     tiles = " --tiles 8 "
+
+            if self.multithread_switch.get_active():
+                threads = " --threads 2 "
+            else:
+                threads = " --threads 1 "
                 
-            rav1e_params = f"--speed {int(self.speed_scale.get_value())} --quantizer {int(self.quantizer_scale.get_value())} --threads 2 --keyint 0 --no-scene-detection" + tiles + rav1e_custom
+            rav1e_params = f"--speed {int(self.speed_scale.get_value())} --quantizer {int(self.quantizer_scale.get_value())} --keyint 0 --no-scene-detection" + threads + tiles + rav1e_custom
 
             cmd = [
                 "av1an",
