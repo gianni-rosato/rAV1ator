@@ -63,7 +63,7 @@ Hovering over most user configurable options in rAV1ator will produce a helpful 
 
 When you load a video file into rAV1ator, resolution & audio bitrate are set to match the source as closely as possible. rAV1ator's rav1e speed preset is set to 6 by default, with a default Quantizer level of 80. You can set the Quantizer level from 1 to 255 using the slider, with larger numerical values indicating smaller filesize at the expense of visual quality. Speed 6 offers a good balance between speed & compression efficiency at any Quantizer level; higher values will encode faster at the expense of visual quality, while lower values will encode more efficiently but more slowly.
 
-The Grain Synth slider allows you to add artifical grain to your video to mimic its natural grain, which applies the artificial grain at decode time as a filter which makes it easier to encode grainy videos at high fidelity. The grain levels are based on ISO noise, so 1 would be equal to ISO 100, 24 equal to ISO 2400, etc.
+The Photon Noise slider allows you to add artifical grain to your video to mimic its natural grain, which applies the artificial grain at decode time as a filter which makes it easier to encode grainy videos at high fidelity. The grain levels are based on ISO noise, so 1 would be equal to ISO 100, 24 equal to ISO 2400, etc.
 
 ### Audio
 
