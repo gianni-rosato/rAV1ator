@@ -558,7 +558,7 @@ Going much higher than the recommended values won't offer significant gain. If n
                                                                                 <property name="icon-name">dialog-warning</property>
                                                                                 <property name="visible">false</property>
                                                                                 <property name="margin-end">20</property>
-                                                                                <property name="tooltip-text" translatable="yes">Check that your source file doesn't contain subtitles if choosing the WebM container, else the output won't concatenate!.</property>
+                                                                                <property name="tooltip-text" translatable="yes">Check that your source file doesn't contain subtitles if choosing the WebM container, else the output won't concatenate!</property>
                                                                             </object>
                                                                         </child>
                                                                         <child>
