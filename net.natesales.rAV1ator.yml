@@ -79,7 +79,7 @@ modules:
     sources:
       - type: git
         url: https://github.com/xiph/rav1e
-        commit: 7121c0df0fd2443887b6ba5bd8eacfde60874d0c
+        commit: 7c9db10494c2fffa98a572027d756e55bf754036
     build-commands:
       - RUSTFLAGS="-C target-cpu=generic" cargo build --release --verbose
       - install target/release/rav1e /app/bin/rav1e

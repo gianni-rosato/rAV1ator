@@ -53,6 +53,12 @@
 
   
   <releases>
+    <release version="1.1.2" date="2023-05-16">
+      <description>
+        <p>Updated rav1e to 0.6.6, fixed typos, cleaned up unnecessary files</p>
+      </description>
+    </release>
+
     <release version="1.1.1" date="2023-05-09">
       <description>
         <p>This version introduces a few fixes:
