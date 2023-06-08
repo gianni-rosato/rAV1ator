@@ -332,11 +332,11 @@ class MainWindow(Adw.Window):
             elif width is None and height is not None:
                 width = -2
 
-            if self.scaling_method.get_selected_item() == "Lanczos":
+            if self.scaling_method.get_selected() == 3: #Lanczos
                 method = "lanczos"
-            elif self.scaling_method.get_selected_item() == "Mitchell":
+            elif self.scaling_method.get_selected() == 1: #Mitchell
                 method = "bicubic:param0=1/3:param1=1/3"
-            elif self.scaling_method.get_selected_item() == "Catrom":
+            elif self.scaling_method.get_selected() == 2: #Catrom
                 method = "bicubic:param0=0:param1=1/2"
             else:
                 method = "bicubic:param0=-1/2:param1=1/4"
@@ -346,15 +346,16 @@ class MainWindow(Adw.Window):
             except:
                 rav1e_custom = ""
 
+            tiles = " --tiles 4 "
             try:
-                if 0 < height < 1920:
-                    tiles = " --tiles 4 " 
+                if height >= 1920:
+                    tiles = " --tiles 8 "
             except:
                 try:
-                    if 0 < int(self.metadata[1]) < 1920:
-                        tiles = " --tiles 4 "
+                    if int(self.metadata[0]) >= 1920:
+                        tiles = " --tiles 8 "
                 except:
-                    tiles = " --tiles 8 "
+                    pass
 
             if self.multithread_switch.get_active():
                 threads = " --threads 2 "
