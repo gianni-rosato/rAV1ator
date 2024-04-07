@@ -1,0 +1,8 @@
+.vscode/
+.idea/
+*.webm
+*.mkv
+__pycache__/
+build/
+dist/
+.flatpak-builder/
