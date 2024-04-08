@@ -2,8 +2,8 @@ from setuptools import setup, find_packages
 
 setup(
     name='rAV1ator',
-    version='1.1.2',
-    description='AV1/OPUS Encoder GUI',
+    version='2.0.0',
+    description='AV1 Hypertuning GUI',
     author='Gianni Rosato',
     author_email='grosatowork@proton.me',
     packages=find_packages(),

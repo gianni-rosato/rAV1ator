@@ -52,30 +52,6 @@ def humanize(seconds):
             return f"{duration[0]} and {duration[1]}"
         else:
             return ", ".join(duration[:-1]) + " and " + duration[-1]
-
-# metadata returns the file's resolution and audio bitrate
-def metadata(file): 
-    try:
-        cmd = [
-            "ffprobe",
-            "-v",
-            "quiet",
-            "-print_format",
-            "json",
-            "-show_format",
-            "-show_streams",
-            file,
-        ]
-        logging.debug("Running ffprobe: " + " ".join(cmd))
-        x = subprocess.Popen(cmd, stdout=subprocess.PIPE).stdout.read()
-        m = json.loads(x)
-        streams = m["streams"]
-        video = streams[0]
-
-        return video["width"], video["height"]
-    except Exception as e:
-        logging.error("Get metadata:", e)
-        return None, None
     
 def notify(text):
     application = Gtk.Application.get_default()
@@ -128,7 +104,7 @@ class FileSelectDialog(Gtk.FileChooserDialog):
                     print(glocalfile.get_path())
             else:
                 glocalfile = self.get_file()
-                # print(glocalfile.get_path())
+
                 self.label.set_label(glocalfile.get_path())
         if self.callback is not None:
             self.callback()
@@ -163,29 +139,45 @@ class MainWindow(Adw.Window):
     source_file_label = Gtk.Template.Child()
     resolution_width_entry = Gtk.Template.Child()
     resolution_height_entry = Gtk.Template.Child()
-    scaling_method = Gtk.Template.Child()
-    warning_image = Gtk.Template.Child()
-    quantizer_scale = Gtk.Template.Child()
-    multithread_switch = Gtk.Template.Child()
+    crop_toggle = Gtk.Template.Child()
+    crf_scale = Gtk.Template.Child()
     speed_scale = Gtk.Template.Child()
-    chroma_switch = Gtk.Template.Child()
+    toggle_denoise = Gtk.Template.Child()
     grain_scale = Gtk.Template.Child()
+
+    # Advanced page
+    workers_entry = Gtk.Template.Child()
+    toggle_tune_vq = Gtk.Template.Child()
+    toggle_tune_psnr = Gtk.Template.Child()
+    toggle_tune_ssim = Gtk.Template.Child()
+    toggle_tune_psy = Gtk.Template.Child()
+    sharpness_scale = Gtk.Template.Child()
+    gop_entry = Gtk.Template.Child()
+    toggle_ogop = Gtk.Template.Child()
+    varboost_scale = Gtk.Template.Child()
+    octile_scale = Gtk.Template.Child()
+    toggle_altcurve = Gtk.Template.Child()
+    toggle_dlf2 = Gtk.Template.Child()
+    qpcomp_scale = Gtk.Template.Child()
+    toggle_qm = Gtk.Template.Child()
+    qm_min_scale = Gtk.Template.Child()
+    qm_max_scale = Gtk.Template.Child()
+    toggle_overlays = Gtk.Template.Child()
+    toggle_tf = Gtk.Template.Child()
+    toggle_cdef = Gtk.Template.Child()
+    tile_rows_entry = Gtk.Template.Child()
+    tile_cols_entry = Gtk.Template.Child()
 
     # Audio page
     bitrate_entry = Gtk.Template.Child()
-    vbr_switch = Gtk.Template.Child()
     downmix_switch = Gtk.Template.Child()
-
-    # Advanced page
-    av1an_entry = Gtk.Template.Child()
-    rav1e_entry = Gtk.Template.Child()
-    workers_entry = Gtk.Template.Child()
+    audio_copy_switch = Gtk.Template.Child()
+    loudnorm_toggle = Gtk.Template.Child()
+    volume_scale = Gtk.Template.Child()
 
     # Export page
     output_file_label = Gtk.Template.Child()
-    warning_image_webm = Gtk.Template.Child()
     container_mkv_button = Gtk.Template.Child()
-    container_webm_button = Gtk.Template.Child()
     container = "mkv"
     encode_button = Gtk.Template.Child()
     encoding_spinner = Gtk.Template.Child()
@@ -195,61 +187,61 @@ class MainWindow(Adw.Window):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
+        # Add the radio buttons to the group
+        self.toggle_tune_psnr.set_group(self.toggle_tune_vq)
+        self.toggle_tune_ssim.set_group(self.toggle_tune_vq)
+        self.toggle_tune_psy.set_group(self.toggle_tune_vq)
+
+        # Set the initial active radio button & default to Tune 3
+        self.toggle_tune_psy.set_active(True)
+        self.tune = 3
+
         # Default to MKV
-        self.container_webm_button.set_has_frame(False)
         self.container_mkv_button.set_has_frame(True)
         self.container = "mkv"
 
         # Reset value to remove extra decimal
         self.speed_scale.set_value(0)
-        self.speed_scale.set_value(8)
-        self.quantizer_scale.set_value(0)
-        self.quantizer_scale.set_value(80)
+        self.speed_scale.set_value(6)
+        self.crf_scale.set_value(0)
+        self.crf_scale.set_value(32)
         self.grain_scale.set_value(0)
-        self.grain_scale.set_value(2)
+        self.grain_scale.set_value(6)
+        self.grain_scale.set_value(0)
+        self.volume_scale.set_value(0)
+        self.volume_scale.set_value(6)
+        self.volume_scale.set_value(0)
 
         # resolution and audio bitrate
-        self.metadata: (float, float) = ()
+        self.metadata: (float, float, float) = ()
 
         # Absolute source path file
         self.source_file_absolute = ""
+        self.output_file_absolute = ""
 
         # Set progress bar to 0
         self.progress_bar.set_fraction(0)
         self.progress_bar.set_text("0%")
         self.process = None
+        self.encode_start = None
 
     def load_metadata(self):
         self.metadata = metadata(self.source_file_absolute)
 
-    @Gtk.Template.Callback()
-    def on_scale_value_changed(self, scale):
-        value = int(scale.get_value())
-        if value > 100:
-            self.warning_image.set_visible(True)
-        else:
-            self.warning_image.set_visible(False)
-
-    @Gtk.Template.Callback()
-    def empty_or_not_empty(self, entry):
-        if self.bitrate_entry.get_text() == "":
-            self.container_mkv("clicked")
-            self.container_webm_button.set_sensitive(False)
-        else:
-            self.container_webm_button.set_sensitive(True)
-
     def handle_file_select(self):
-
         # Trim file path
         if "/" in self.source_file_label.get_text():
             self.source_file_absolute = self.source_file_label.get_text()
             self.source_file_label.set_text(os.path.basename(self.source_file_absolute))
-            self.load_metadata()
 
     # Video
 
     @Gtk.Template.Callback()
     def open_source_file(self, button):
+        self.bitrate_entry.set_text(str(112))
+        self.gop_entry.set_text(str(240))
+        self.tile_cols_entry.set_text(str(1))
+        self.tile_rows_entry.set_text(str(1))
         FileSelectDialog(
             parent=self,
             select_multiple=False,
@@ -258,8 +250,6 @@ class MainWindow(Adw.Window):
             open_only=True,
             callback=self.handle_file_select
         )
-
-    # Export
 
     @Gtk.Template.Callback()
     def open_output_file(self, button):
@@ -271,19 +261,39 @@ class MainWindow(Adw.Window):
             open_only=False,
         )
 
-    @Gtk.Template.Callback()
-    def container_mkv(self, button):
-        self.container_webm_button.set_has_frame(False)
-        self.container_mkv_button.set_has_frame(True)
-        self.warning_image_webm.set_visible(False)
-        self.container = "mkv"
+    # Advanced
 
-    @Gtk.Template.Callback()
-    def container_webm(self, button):
-        self.container_mkv_button.set_has_frame(False)
-        self.container_webm_button.set_has_frame(True)
-        self.warning_image_webm.set_visible(True)
-        self.container = "webm"
+    def on_tune_vq(self, button):
+        self.toggle_tune_vq.set_active(True)
+        self.toggle_tune_psnr.set_active(False)
+        self.toggle_tune_ssim.set_active(False)
+        self.toggle_tune_psy.set_active(False)
+        self.tune = 0
+
+    def on_tune_psnr(self, button):
+        self.toggle_tune_vq.set_active(False)
+        self.toggle_tune_psnr.set_active(True)
+        self.toggle_tune_ssim.set_active(False)
+        self.toggle_tune_psy.set_active(False)
+        self.tune = 1
+
+    def on_tune_ssim(self, button):
+        self.toggle_tune_vq.set_active(False)
+        self.toggle_tune_psnr.set_active(False)
+        self.toggle_tune_ssim.set_active(True)
+        self.toggle_tune_psy.set_active(False)
+        self.tune = 2
+
+    def on_tune_psy(self, button):
+        self.toggle_tune_vq.set_active(False)
+        self.toggle_tune_psnr.set_active(False)
+        self.toggle_tune_ssim.set_active(False)
+        self.toggle_tune_psy.set_active(True)
+        self.tune = 3
+
+    # Export
+
+    container = "mkv"
 
     @Gtk.Template.Callback()
     def start_export(self, button):
@@ -292,10 +302,8 @@ class MainWindow(Adw.Window):
         self.stop_button.set_visible(True)
 
         output = self.output_file_label.get_text()
-        if self.container == "mkv" and not output.endswith(".mkv"):
+        if not output.endswith(".mkv"):
             output += ".mkv"
-        elif self.container == "webm" and not output.endswith(".webm"):
-            output += ".webm"
 
         def run_in_thread():
             encode_start = time.time()
@@ -305,15 +313,6 @@ class MainWindow(Adw.Window):
                 workers = f"{workers_specified}"
             except ValueError:
                 workers = "0"
-
-            if self.bitrate_entry.get_text() != "":
-                audioparams = f"-c:a libopus -b:a {int(self.bitrate_entry.get_text())}k"
-                if not self.vbr_switch.get_state():
-                    audioparams = " ".join([audioparams, "-vbr off"])
-                if self.downmix_switch.get_state():
-                    audioparams = " ".join([audioparams, "-ac 2"])  
-            else:
-                audioparams = "-c:a copy"
 
             width = height = None
 
@@ -327,62 +326,165 @@ class MainWindow(Adw.Window):
             except ValueError:
                 pass
 
-            if width is not None and height is None:
-                height = -2
-            elif width is None and height is not None:
-                width = -2
-
-            if self.scaling_method.get_selected() == 3: #Lanczos
-                method = "lanczos"
-            elif self.scaling_method.get_selected() == 1: #Mitchell
-                method = "bicubic:param0=1/3:param1=1/3"
-            elif self.scaling_method.get_selected() == 2: #Catrom
-                method = "bicubic:param0=0:param1=1/2"
+            if self.crop_toggle.get_active():
+                if width is not None and height is None:
+                    height = "ih"
+                elif width is None and height is not None:
+                    width = "iw"
             else:
-                method = "bicubic:param0=-1/2:param1=1/4"
+                if width is not None and height is None:
+                    height = -2
+                elif width is None and height is not None:
+                    width = -2
 
-            try:
-                rav1e_custom = self.rav1e_entry.get_text()
-            except:
-                rav1e_custom = ""
+            method = "bicubic:param0=0:param1=1/2"
 
-            tiles = " --tiles 4 "
-            try:
-                if height >= 1920:
-                    tiles = " --tiles 8 "
-            except:
-                try:
-                    if int(self.metadata[0]) >= 1920:
-                        tiles = " --tiles 8 "
-                except:
-                    pass
-
-            if self.multithread_switch.get_active():
-                threads = " --threads 2 "
+            if width is not None and height is not None:
+                resolution = "crop" + f"={width}:{height}" if self.crop_toggle.get_active() else "scale" + f"={width}:{height}:flags={method}"
             else:
-                threads = " --threads 1 "
-                
-            rav1e_params = f"--speed {int(self.speed_scale.get_value())} --quantizer {int(self.quantizer_scale.get_value())} --keyint 0 --no-scene-detection" + threads + tiles + " " + rav1e_custom
+                resolution = "-y"
 
-            if self.rav1e_entry.get_text() != "": # function to remove duplicates in the rav1e parameters list
-                rav1e_dupl2_list = ["--speed", "--quantizer", "--keyint", "--tiles", "--threads"]
-                rav1e_dupl_list = ["--no-scene-detection"]
-                
-                rav1e_params_list = rav1e_params.split()
-                copy = rav1e_params_list[:]
-                i = 0
-                while i < len(rav1e_params_list):
-                    for j in range(i+1,len(rav1e_params_list)):
-                        if rav1e_params_list[i] == rav1e_params_list[j] and rav1e_params_list[i] in rav1e_dupl2_list: # remove duplicates for "two-string" parameters e.g --threads 4
-                            copy[j] = ""
-                            copy[i+1] = rav1e_params_list[j+1]
-                            copy[j+1] = ""
-                        if rav1e_params_list[i] == rav1e_params_list[j] and rav1e_params_list[i] in rav1e_dupl_list: # remove duplicates for "single-string" parameters
-                            copy[j] = ""
+            if self.volume_scale.get_value() == 0:
+                if self.loudnorm_toggle.get_active():
+                    audio_filters = "loudnorm,aformat=channel_layouts=7.1|6.1|5.1|stereo"
+                else:
+                    audio_filters = "aformat=channel_layouts=7.1|6.1|5.1|stereo"
+            else:
+                if self.loudnorm_toggle.get_active():
+                    audio_filters = f"loudnorm,volume={int(self.volume_scale.get_value())}dB,aformat=channel_layouts=7.1|6.1|5.1|stereo"
+                else:
+                    audio_filters = f"volume={int(self.volume_scale.get_value())}dB,aformat=channel_layouts=7.1|6.1|5.1|stereo"
 
-                    i+=1
+            if self.audio_copy_switch.get_state():
+                audiosettings = " ".join([
+                    "-c:a", "copy"
+                ])
+            else:
+                audiosettings = " ".join([
+                    "-c:a", "libopus",
+                    "-mapping_family", "1",
+                    "-b:a", self.bitrate_entry.get_text() + "K",
+                    "-af", audio_filters,
+                    "-ac", "2" if self.downmix_switch.get_state() else "0"
+                ])
 
-                rav1e_params = " ".join(list(dict.fromkeys((" ".join(copy)).split())))
+            crf_value = f"{int(self.crf_scale.get_value())}"
+            speed_value = f"{int(self.speed_scale.get_value())}"
+
+            if self.toggle_denoise.get_active():
+                grain_denoise = "1"
+            else:
+                grain_denoise = "0"
+
+            grain_value = str(int(self.grain_scale.get_value()))
+
+            sharpness_lvl = self.sharpness_scale.get_value()
+            
+            if self.toggle_ogop.get_active():
+                encoder_opengop = "1"
+            else:
+                encoder_opengop = "2"
+
+            if self.toggle_altcurve.get_active():
+                enc_alt_curve = "1"
+            else:
+                enc_alt_curve = "0"
+
+            if self.toggle_dlf2.get_active():
+                dlf_value = "2"
+            else:
+                dlf_value = "1"
+
+            varboost_strength = str(int(self.varboost_scale.get_value()))
+            octile_lvl = str(int(self.octile_scale.get_value()))
+            qp_comp_strength = str(int(self.qpcomp_scale.get_value()))
+
+            if self.toggle_qm.get_state():
+                qm_enabled = "1"
+            else:
+                qm_enabled = "0"
+
+            qm_min_value = str(int(self.qm_min_scale.get_value()))
+            qm_max_value = str(int(self.qm_max_scale.get_value()))
+
+            if self.toggle_overlays.get_state():
+                overlays_enabled = "1"
+            else:
+                overlays_enabled = "0"
+
+            if self.toggle_tf.get_state():
+                tf_enabled = "1"
+            else:
+                tf_enabled = "0"
+
+            if self.tile_rows_entry.get_text() == "0":
+                tile_rows = "0"
+            elif self.tile_rows_entry.get_text() == "1":
+                tile_rows = "1"
+            elif self.tile_rows_entry.get_text() == "2":
+                tile_rows = "2"
+            elif self.tile_rows_entry.get_text() == "3":
+                tile_rows = "3"
+            elif self.tile_rows_entry.get_text() == "4":
+                tile_rows = "4"
+            elif self.tile_rows_entry.get_text() == "5":
+                tile_rows = "5"
+            elif self.tile_rows_entry.get_text() == "6":
+                tile_rows = "6"
+            else:
+                tile_rows = "1"
+            
+            if self.toggle_cdef.get_active():
+                cdef_enabled = "1"
+            else:
+                cdef_enabled = "0"
+
+            if self.tile_cols_entry.get_text() == "0":
+                tile_cols = "0"
+            elif self.tile_cols_entry.get_text() == "1":
+                tile_cols = "1"
+            elif self.tile_cols_entry.get_text() == "2":
+                tile_cols = "2"
+            elif self.tile_cols_entry.get_text() == "3":
+                tile_cols = "3"
+            elif self.tile_cols_entry.get_text() == "4":
+                tile_cols = "4"
+            elif self.tile_cols_entry.get_text() == "5":
+                tile_cols = "5"
+            elif self.tile_cols_entry.get_text() == "6":
+                tile_cols = "6"
+            else:
+                tile_cols = "1"
+
+            if self.gop_entry.get_text == "":
+                av1an_gop_size = "240"
+            else:
+                av1an_gop_size = str(int(self.gop_entry.get_text()))
+
+            videosettings = " ".join([
+                "--tune", str(self.tune),
+                "--sharpness", sharpness_lvl,
+                "--keyint", "-1",
+                "--lp", "2",
+                "--irefresh-type", encoder_opengop,
+                "--crf", crf_value,
+                "--preset", speed_value,
+                "--film-grain", grain_value,
+                "--film-grain-denoise", grain_denoise,
+                "--variance-boost-strength", varboost_strength,
+                "--variance-octile", octile_lvl,
+                "--enable-alt-curve", enc_alt_curve,
+                "--qp-scale-compress-strength", qp_comp_strength,
+                "--enable-dlf", dlf_value,
+                "--enable-qm", qm_enabled,
+                "--qm-min", qm_min_value,
+                "--qm-max", qm_max_value,
+                "--enable-tf", tf_enabled,
+                "--enable-cdef", cdef_enabled,
+                "--enable-overlays", overlays_enabled,
+                "--tile-rows", tile_rows,
+                "--tile-columns", tile_cols,
+            ])
 
             cmd = [
                 "av1an",
@@ -391,50 +493,21 @@ class MainWindow(Adw.Window):
                 "--split-method", "av-scenechange",
                 "-m", "hybrid",
                 "-c", "ffmpeg",
-                "-e", "rav1e",
-                "--photon-noise", f"{int(self.grain_scale.get_value())}",
+                "--sc-downscale-height", "1080",
+                "-e", "svt-av1",
                 "--force",
                 "--pix-format", "yuv420p10le",
-                "-w", workers
-            ] # some parameters are added later to avoid errors introduced by the "overwrite av1an parameters" user entry
-
-            if self.chroma_switch.get_active():
-                cmd.append("--chroma-noise")
-
-            try:
-                cmd.extend(str(self.av1an_entry.get_text()).split())
-            except:
-                pass
-            
-            if self.av1an_entry.get_text() != "": # function to remove duplicates in the Av1an parameters list
-                av1an_dupl2_list = ["--temp", "--split-method", "-m", "-c", "--pix-format", "--audio-params", "-f", "--photon-noise", "-w"]
-                av1an_dupl_list = ["-y", "--force"]
-                if self.chroma_switch.get_active():
-                    av1an_dupl_list.append("--chroma-noise")
-                copy = cmd[:]
-                i = 0
-                while i < len(cmd):
-                    for j in range(i+1,len(cmd)):
-                        if cmd[i] == cmd[j] and cmd[i] in av1an_dupl2_list: # remove duplicates for "two-string" parameters e.g --photon-noise 4
-                            copy[j] = ""
-                            copy[i+1] = cmd[j+1]
-                            copy[j+1] = ""
-                        if cmd[i] == cmd[j] and cmd[i] in av1an_dupl_list: # remove duplicates for "single-string" parameters e.g --chroma-noise
-                            copy[j] = ""
-                    i+=1
-            
-                cmd = (" ".join(copy)).split()
-            
-            cmd_f = ["--video-params", rav1e_params, "--audio-params", audioparams, "-i", self.source_file_absolute, "-o", output] # the remaining params are added
-            cmd.extend(cmd_f)
-
-            if width is not None or height is not None:
-                cmd.append("-f")
-                cmd.append(f" -vf scale={width}:{height}:flags={method} ")
+                "-w", workers,
+                "-f", f" -vf {resolution} " if width is not None or height is not None  else " -y ",
+                "-a", audiosettings,
+                "-v", videosettings,
+                "-x", f"{int(av1an_gop_size)}",
+                "-o", output,
+            ]
 
             print(" ".join(cmd))
             self.process = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                                     universal_newlines=True)
+                                            universal_newlines=True)
             last_update = time.time_ns()
             for line in self.process.stdout:
                 print(line.strip())
@@ -487,7 +560,6 @@ class App(Adw.Application):
         quit_action = Gio.SimpleAction(name="quit")
         quit_action.connect("activate", self.quit)
         self.add_action(quit_action)
-        #os.system("rav1e --version")
 
     def on_activate(self, app):
         if first_open():
@@ -501,52 +573,33 @@ class App(Adw.Application):
         about = Adw.AboutWindow(transient_for=self.win,
                                 application_name="rAV1ator",
                                 application_icon="net.natesales.rAV1ator",
-                                developer_name="Nate Sales, Gianni Rosato & Trix",
+                                developer_name="AV1 Hypertuning GUI",
                                 version=info.version,
-                                copyright="Copyright © 2023 Nate Sales &amp; Gianni Rosato",
+                                copyright="Copyright © 2024 Nate Sales &amp; Gianni Rosato",
                                 license_type=Gtk.License.GPL_3_0,
-                                website="https://github.com/gianni-rosato/rAV1ator/issues",
+                                website="https://github.com/gianni-rosato/rAV1ator",
                                 issue_url="https://github.com/gianni-rosato/rAV1ator/issues")
-        # about.set_translator_credits(translators())
-        about.set_developers(["Nate Sales <nate@natesales.net>","Gianni Rosato <grosatowork@proton.me>", "Trix <>"])
-        about.set_designers(["Gianni Rosato <grosatowork@proton.me>", "Trix <>"])
+        about.set_developers(["Nate Sales https://natesales.net","Gianni Rosato https://giannirosato.com", "Trix <>"])
+        about.set_designers(["Gianni Rosato https://giannirosato.com", "Trix <>"])
         about.add_acknowledgement_section(
-            ("Special thanks to the AV1 Community"),
+            ("Special thanks to the encoding community!"),
             [
-                "AV1 Discord https://discord.gg/SjumTJEsFD",
-            ]
-        )
-        about.add_acknowledgement_section(
-            ("Special thanks to the Av1an dev team"),
-            [
-                "Av1an Discord https://discord.gg/BwyQp2QX9h",
-            ]
-        )
-        about.add_acknowledgement_section(
-            ("Special thanks to the rav1e dev team"),
-            [
-                "rav1e repository https://github.com/xiph/rav1e",
-            ]
-        )
-        about.add_acknowledgement_section(
-            ("Software versions:"),
-            [
-                str(subprocess.check_output(["av1an", "--version"]).decode("utf-8").strip().splitlines()[0])+f"\n\n"+str(subprocess.check_output(["rav1e", "--version"]).decode("utf-8").strip().splitlines()[0]),
+                "AV1 For Dummies https://discord.gg/bbQD5MjDr3", "SVT-AV1-PSY Fork https://github.com/gianni-rosato/svt-av1-psy", "Codec Wiki https://wiki.x266.mov/", "Av1an Discord https://discord.gg/BwyQp2QX9h",
             ]
         )
         about.add_legal_section(
             title='Av1an',
-            copyright='Copyright © 2023 Av1an',
+            copyright='Copyright © 2024 Av1an',
             license_type=Gtk.License.GPL_3_0,
         )
         about.add_legal_section(
             title='FFmpeg',
-            copyright='Copyright © 2023 FFmpeg',
+            copyright='Copyright © 2024 FFmpeg',
             license_type=Gtk.License.GPL_3_0,
         )
         about.add_legal_section(
-            title='rav1e',
-            copyright='Copyright © 2023 xiph.org',
+            title='SVT-AV1',
+            copyright='Copyright © 2024 Alliance for Open Media',
             license_type=Gtk.License.BSD,
         )
         about.present()

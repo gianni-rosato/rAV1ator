@@ -53,6 +53,13 @@
 
   
   <releases>
+
+    <release version="2.0.0" date="2024-04-07">
+      <description>
+        <p>This update includes some monumental changes to rAV1ator, including a brand new encoder under the hood!</p>
+      </description>
+    </release>
+
     <release version="1.1.2" date="2023-05-16">
       <description>
         <p>Updated rav1e to 0.6.6, fixed typos, cleaned up unnecessary files</p>

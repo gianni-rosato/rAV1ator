@@ -2,20 +2,20 @@ app-id: net.natesales.rAV1ator
 command: rAV1ator
 sdk: org.gnome.Sdk
 runtime: org.gnome.Platform
-runtime-version: "44"
+runtime-version: "45"
 
 add-build-extensions:
   org.freedesktop.Sdk.Extension.rust-stable:
     directory: rust-stable
     add-ld-path: .
-    version: "22.08"
+    version: "23.08"
     no-autodownload: true
     autodelete: false
 
-  org.freedesktop.Sdk.Extension.llvm14:
-    directory: llvm14
+  org.freedesktop.Sdk.Extension.llvm17:
+    directory: llvm17
     add-ld-path: .
-    version: "22.08"
+    version: "23.08"
     no-autodownload: true
     autodelete: false
 
@@ -32,8 +32,8 @@ build-options:
   env: 
     CARGO_HOME: /run/build/done/cargo
     PROTOC: /app/bin/protoc
-  prepend-ld-library-path: /usr/lib/sdk/llvm14/lib
-  prepend-path: /usr/lib/sdk/llvm14/bin
+  prepend-ld-library-path: /usr/lib/sdk/llvm17/lib
+  prepend-path: /usr/lib/sdk/llvm17/bin
 
 cleanup:
   - /include
@@ -51,15 +51,15 @@ modules:
     buildsystem: autotools
     sources:
       - type: archive
-        url: https://github.com/sekrit-twc/zimg/archive/refs/tags/release-3.0.4.tar.gz
-        sha256: 219d1bc6b7fde1355d72c9b406ebd730a4aed9c21da779660f0a4c851243e32f
+        url: https://github.com/sekrit-twc/zimg/archive/refs/tags/release-3.0.5.zip
+        sha256: 249883432b4dcd0264c351a66f745645fe368afd7725c1517dd95d1c9a54bf24
 
   - name: vapoursynth
     buildsystem: autotools
     sources:
       - type: archive
-        url: https://github.com/vapoursynth/vapoursynth/archive/refs/tags/R62.tar.gz
-        sha256: 6f3eb7e2e32a0572b363e08d16092418e99bd9c8f06661645a0995f1f736d438
+        url: https://github.com/vapoursynth/vapoursynth/archive/refs/tags/R66.tar.gz
+        sha256: e2c82b1f583adbc33dabbe59c0dc65e6aede70dedebe79be94155cb38d418b2c
 
   - name: ffmpeg
     config-opts:
@@ -70,26 +70,40 @@ modules:
       - --enable-libzimg
     buildsystem: autotools
     sources:
-      - type: archive
-        url: http://ffmpeg.org/releases/ffmpeg-6.0.tar.xz
-        sha256: 57be87c22d9b49c112b6d24bc67d42508660e6b718b3db89c44e47e289137082
+      - type: git
+        url: https://git.ffmpeg.org/ffmpeg.git
+        commit: e38092ef9395d7049f871ef4d5411eb410e283e0
 
-  - name: rav1e
-    buildsystem: simple
+  - name: svt-av1-psy
+    buildsystem: cmake-ninja
+    builddir: true
+    config-opts:
+      - "-DCMAKE_C_COMPILER=clang"
+      - "-DCMAKE_CXX_COMPILER=clang++"
+      - "-DCMAKE_EXE_LINKER_FLAGS=-fuse-ld=lld"
+      - "-DCMAKE_SHARED_LINKER_FLAGS=-fuse-ld=lld"
+      - "-DCMAKE_BUILD_TYPE=Release"
+      - "-DCMAKE_CXX_FLAGS=-O3 -flto"
+      - "-DCMAKE_C_FLAGS=-O3 -flto"
+      - "-DBUILD_SHARED_LIBS=ON"
+      - "-DBUILD_APPS=ON"
+      - "-DBUILD_DEC=OFF"
+      - "-DBUILD_ENC=ON"
+      - "-DBUILD_TESTING=OFF"
+    cleanup:
+      - "/include"
+      - "/lib/pkgconfig"
     sources:
       - type: git
-        url: https://github.com/xiph/rav1e
-        commit: 7c9db10494c2fffa98a572027d756e55bf754036
-    build-commands:
-      - RUSTFLAGS="-C target-cpu=generic" cargo build --release --verbose
-      - install target/release/rav1e /app/bin/rav1e
+        url: https://github.com/gianni-rosato/svt-av1-psy
+        commit: 5cac47c1eaee9c5229cdf693bf26e90ff6c54b40
 
   - name: av1an
     buildsystem: simple
     sources:
       - type: git
-        url: https://github.com/gianni-rosato/av1an-progbar/
-        commit: e07d4e3fc217bdd98cfb5264e2e119b170dcdaa9
+        url: https://github.com/gianni-rosato/av1an-progbar
+        commit: d14b5c08e0a317b52dcb09279a28b796adc788a9
     build-commands:
       - cargo build --release --verbose
       - install target/release/av1an /app/bin/av1an

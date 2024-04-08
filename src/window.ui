@@ -1,13 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
     <requires lib="gtk" version="4.0" />
-    <requires lib="libadwaita" version="1.0" />
+    <requires lib="libadwaita" version="1.4.0" />
     <menu id="primary_menu">
         <section>
-            <item>
-                <attribute name="label" translatable="yes">_Settings</attribute>
-                <attribute name="action">app.settings</attribute>
-            </item>
             <item>
                 <attribute name="label" translatable="yes">_About</attribute>
                 <attribute name="action">app.about</attribute>
@@ -21,11 +17,10 @@
     <template class="rAV1atorWindow" parent="AdwWindow">
         <property name="modal">False</property>
         <property name="width-request">360</property>
-        <property name="title" translatable="yes">rAV1ator</property>
+        <property name="height-request">360</property>
         <property name="content">
-            <object class="GtkBox">
-                <property name="orientation">vertical</property>
-                <child>
+            <object class="AdwToolbarView">
+                <child type="top">
                     <object class="AdwHeaderBar">
                         <property name="centering-policy">strict</property>
                         <child type="end">
@@ -37,15 +32,13 @@
                         <property name="title-widget">
                             <object class="AdwViewSwitcherTitle" id="switcher_title">
                                 <property name="stack">stack</property>
-                                <!-- <property name="title" bind-source="AdwViewSwitcherDemoWindow" bind-property="title" bind-flags="sync-create"/> -->
+                                <property name="title" translatable="yes">rAV1ator</property>
                             </object>
                         </property>
                     </object>
                 </child>
-                <child>
+                <property name="content">
                     <object class="AdwViewStack" id="stack">
-                        <property name="vexpand">True</property>
-
                         <!-- Video Tab -->
                         <child>
                             <object class="AdwViewStackPage">
@@ -70,6 +63,7 @@
                                                 </style>
                                             </object>
                                         </child>
+
                                         <child>
                                             <object class="AdwPreferencesPage">
                                                 <child>
@@ -91,18 +85,19 @@
                                                             <object class="AdwActionRow">
                                                                 <property name="title" translatable="yes">_Resolution</property>
                                                                 <property name="use-underline">true</property>
-                                                                <property name="tooltip-text">Sets the output resolution. Leave untouched to preserve the source resolution based on the source's aspect ratio. Providing one option will automatically calculate the other.</property>
+                                                                <property name="tooltip-text" translatable="yes">Sets the output resolution. Width &amp; height will match the source media if left empty. Putting in one value will automatically calculate the other based on the source video's aspect ratio if "Crop" is unchecked; otherwise, the empty value will match the original.</property>
+                                                                <child>
+                                                                    <object class="GtkCheckButton" id="crop_toggle">
+                                                                        <property name="active">True</property>
+                                                                        <property name="label">Crop</property>
+                                                                        <property name="valign">center</property>
+                                                                        <property name="hexpand">False</property>
+                                                                        <property name="tooltip-text">Crops the video instead of scaling it to the target resolution.</property>
+                                                                    </object>
+                                                                </child>
                                                                 <child>
                                                                     <object class="GtkBox">
-                                                                        <!-- <child>
-                                                                            <object class="GtkLabel">
-                                                                                <property name="margin-top">24</property>
-                                                                                <property name="margin-bottom">24</property>
-                                                                                <property name="margin-start">24</property>
-                                                                                <property name="margin-end">24</property>
-                                                                                <property name="label" translatable="yes">Resolution</property>
-                                                                            </object>
-                                                                        </child> -->
+                                                                        <child></child>
                                                                         <child>
                                                                             <object class="GtkBox">
                                                                                 <property name="margin-top">8</property>
@@ -113,36 +108,15 @@
                                                                                 <child>
                                                                                     <object class="GtkEntry" id="resolution_width_entry">
                                                                                         <property name="placeholder-text" translatable="yes">Width</property>
-                                                                                        <property name="max-width-chars">6</property>
+                                                                                        <property name="max-width-chars">7</property>
                                                                                     </object>
                                                                                 </child>
                                                                                 <child>
                                                                                     <object class="GtkEntry" id="resolution_height_entry">
                                                                                         <property name="placeholder-text" translatable="yes">Height</property>
-                                                                                        <property name="max-width-chars">6</property>
+                                                                                        <property name="max-width-chars">7</property>
                                                                                     </object>
                                                                                 </child>
-                                                                                <child>
-                                                                                    <object class="GtkDropDown" id="scaling_method">
-                                                                                        <property name="tooltip-text">Change the downscaling kernel.
-Catrom (Bicubic b=0 c=1/2) is sharp, but may introduce ringing.
-Lanczos is sharper than Catrom with more potential ringing.
-Mitchell (Bicubic b=1/3 c=1/3) is softer than both.
-BicubicDidee (Bicubic b=-1/2 c=1/4) strikes a good balance between sharpness and not introducing ringing.
-Leave untouched if unsure.                                                              </property>
-                                                                                        <property name="model">
-                                                                                            <object class="GtkStringList">
-                                                                                                <items>
-                                                                                                    <item translatable="yes">BicubicDidee</item>
-                                                                                                    <item translatable="yes">Mitchell</item>
-                                                                                                    <item translatable="yes">Catrom</item>
-                                                                                                    <item translatable="yes">Lanczos</item>
-                                                                                                </items>
-                                                                                            </object>
-                                                                                        </property>
-                                                                                    </object>
-                                                                                </child>
-
                                                                             </object>
                                                                         </child>
                                                                     </object>
@@ -152,8 +126,8 @@ Leave untouched if unsure.                                                      
 
                                                         <child>
                                                             <object class="AdwActionRow">
-                                                                <property name="title" translatable="yes">_Quantizer</property>
-                                                                <property name="tooltip-text">The quantizer's value determines the size &amp; quality of your output. Higher values mean lower file size &amp; quality while lower values create larger, higher-quality videos.</property>
+                                                                <property name="title" translatable="yes">_CRF</property>
+                                                                <property name="tooltip-text">The CRF's value determines the size &amp; quality of your output. Higher values mean higher file size &amp; quality, while lower values create smaller, lower-quality videos.</property>
                                                                 <property name="use-underline">true</property>
                                                                 <child>
                                                                     <object class="GtkBox">
@@ -161,23 +135,16 @@ Leave untouched if unsure.                                                      
                                                                             <class name="linked" />
                                                                         </style>
                                                                         <child>
-                                                                            <object class="GtkImage" id="warning_image">
-                                                                                <property name="icon-name">dialog-warning</property>
-                                                                                <property name="visible">false</property>
-                                                                                <property name="tooltip-text" translatable="yes">Values above 100 may introduce noticeable quality degradation.</property>
-                                                                            </object>
-                                                                        </child>
-                                                                        <child>
-                                                                            <object class="GtkScale" id="quantizer_scale">
+                                                                            <object class="GtkScale" id="crf_scale">
                                                                                 <property name="halign">end</property>
                                                                                 <property name="valign">center</property>
                                                                                 <property name="draw-value">1</property>
                                                                                 <property name="digits">0</property>
-                                                                                <property name="value-pos">top</property>
+                                                                                <property name="value-pos">left</property>
                                                                                 <property name="width-request">300</property>
                                                                                 <property name="adjustment">
                                                                                     <object class="GtkAdjustment">
-                                                                                        <property name="upper">255</property>
+                                                                                        <property name="upper">70</property>
                                                                                         <property name="lower">1</property>
                                                                                         <property name="step-increment">1</property>
                                                                                         <property name="page-increment">1</property>
@@ -197,30 +164,21 @@ Leave untouched if unsure.                                                      
                                                                 <property name="tooltip-text">This value determines how hard your system will work to encode your video. Lower values mean your system will take longer to encode the video, but the files will be higher quality. Higher values will encode less efficiently, but much more quickly.</property>
                                                                 <property name="use-underline">true</property>
                                                                 <child>
-                                                                    <object class="GtkCheckButton" id="multithread_switch">
-                                                                        <property name="active">True</property>
-                                                                        <property name="label">Multithreading</property>
-                                                                        <property name="valign">center</property>
-                                                                        <property name="hexpand">False</property>
-                                                                        <property name="tooltip-text">Enables each rav1e instance to use two threads. Disable if you do not have a multithreaded CPU.</property>
-                                                                        <!-- <property name="active" bind-source="LoginAdvancedDialog" bind-property="autodiscovery" bind-flags="sync-create|bidirectional" /> -->
-                                                                    </object>
-                                                                </child>
-                                                                <child>
                                                                     <object class="GtkScale" id="speed_scale">
                                                                         <property name="halign">end</property>
                                                                         <property name="valign">center</property>
                                                                         <property name="draw-value">1</property>
                                                                         <property name="digits">0</property>
-                                                                        <property name="value-pos">top</property>
+                                                                        <property name="value-pos">left</property>
                                                                         <property name="width-request">300</property>
                                                                         <property name="adjustment">
                                                                             <object class="GtkAdjustment">
-                                                                                <property name="upper">9</property>
-                                                                                <property name="value">8</property>
-                                                                                <property name="lower">1</property>
+                                                                                <property name="upper">13</property>
+                                                                                <property name="value">6</property>
+                                                                                <property name="lower">-3</property>
                                                                                 <property name="step-increment">1</property>
                                                                                 <property name="page-increment">1</property>
+                                                                                <signal name="value-changed" handler="speed_changed" swapped="no" />
                                                                             </object>
                                                                         </property>
                                                                     </object>
@@ -230,36 +188,35 @@ Leave untouched if unsure.                                                      
 
                                                         <child>
                                                             <object class="AdwActionRow">
-                                                                <property name="title" translatable="yes">_Photon Noise</property>
-                                                                <property name="tooltip-text">This value determines how much artificial grain will be applied to your video. Values are equivalent to camera ISO; 1 would be equal to ISO 100, 24 would be ISO 2400, etc. It is not recommended to disable photon noise as it will help avoid banding, even on sources without grain.</property>
+                                                                <property name="title" translatable="yes">_Grain Synth</property>
+                                                                <property name="tooltip-text">This value determines how much artificial grain will be applied to your video. It is not recommended to disable film grain, as it will help avoid banding on any source regardless of the presence of grain in the input.</property>
                                                                 <property name="use-underline">true</property>
+                                                                <child>
+                                                                    <object class="GtkCheckButton" id="toggle_denoise">
+                                                                        <property name="active">False</property>
+                                                                        <property name="label">Denoise</property>
+                                                                        <property name="valign">center</property>
+                                                                        <property name="hexpand">False</property>
+                                                                        <property name="tooltip-text" translatable="yes">Denoises the input video before applying film grain. This is often harmful to visual fidelity, so it is recommended to leave this disabled.</property>
+                                                                    </object>
+                                                                </child>
                                                                 <child>
                                                                     <object class="GtkBox">
                                                                         <style>
                                                                             <class name="linked" />
                                                                         </style>
                                                                         <child>
-                                                                            <object class="GtkCheckButton" id="chroma_switch">
-                                                                                <property name="active">False</property>
-                                                                                <property name="label">Chroma</property>
-                                                                                <property name="valign">center</property>
-                                                                                <property name="hexpand">False</property>
-                                                                                <property name="tooltip-text">Enables the use of chroma noise. By default, only luma noise is used. Leave unchecked if unsure.</property>
-                                                                                <!-- <property name="active" bind-source="LoginAdvancedDialog" bind-property="autodiscovery" bind-flags="sync-create|bidirectional" /> -->
-                                                                            </object>
-                                                                        </child>
-                                                                        <child>
                                                                             <object class="GtkScale" id="grain_scale">
                                                                                 <property name="hexpand">False</property>
                                                                                 <property name="valign">center</property>
                                                                                 <property name="draw-value">1</property>
                                                                                 <property name="digits">0</property>
-                                                                                <property name="value-pos">top</property>
+                                                                                <property name="value-pos">left</property>
                                                                                 <property name="width-request">300</property>
                                                                                 <property name="adjustment">
                                                                                     <object class="GtkAdjustment">
-                                                                                        <property name="upper">64</property>
-                                                                                        <property name="value">2</property>
+                                                                                        <property name="upper">50</property>
+                                                                                        <property name="value">0</property>
                                                                                         <property name="lower">0</property>
                                                                                         <property name="step-increment">1</property>
                                                                                         <property name="page-increment">1</property>
@@ -269,9 +226,459 @@ Leave untouched if unsure.                                                      
                                                                         </child>
                                                                     </object>
                                                                 </child>
+                                                            </object>
+                                                        </child>
+
+                                                    </object>
+                                                </child>
+                                            </object>
+                                        </child>
+                                    </object>
+                                </property>
+                            </object>
+                        </child>
+
+                        <!-- Advanced Tab -->
+                        <child>
+                            <object class="AdwViewStackPage">
+                                <property name="name">page4</property>
+                                <property name="title" translatable="yes">_Advanced</property>
+                                <property name="icon-name">application-x-addon-symbolic</property>
+                                <property name="use-underline">True</property>
+                                <property name="child">
+                                    <object class="GtkBox">
+                                        <property name="orientation">vertical</property>
+                                        <property name="homogeneous">False</property>
+                                        <child>
+                                            <object class="AdwPreferencesPage">
+                                                <property name="margin-top">16</property>
+                                                <child>
+                                                    <object class="AdwPreferencesGroup">
+                                                        <child>
+                                                            <object class="AdwActionRow">
+                                                                <property name="title" translatable="yes">_Workers</property>
+                                                                <property name="use-underline">true</property>
+                                                                <property name="tooltip-text">Sets the number of encoding instances that will be run in parallel to accelerate encoding on multicore CPUs. Higher values come at the cost of higher memory usage. By default, each worker uses two threads; worker quantity is calculated heuristically based on your hardware specs if left blank. Try reducing the number of workers if you encounter crashes.</property>
+                                                                <child>
+                                                                    <object class="GtkBox">
+                                                                        <property name="margin-top">8</property>
+                                                                        <property name="margin-bottom">8</property>
+                                                                        <child>
+                                                                            <object class="GtkEntry" id="workers_entry">
+                                                                                <property name="placeholder-text" translatable="yes">Auto</property>
+                                                                                <property name="max-width-chars">5</property>
+                                                                            </object>
+                                                                        </child>
+                                                                    </object>
+                                                                </child>
+                                                            </object>
+                                                        </child>
+
+                                                        <child>
+                                                            <object class="AdwActionRow" id="tunings">
+                                                                <property name="title" translatable="yes">_Tune</property>
+                                                                <property name="tooltip-text" translatable="yes">Set the encoder's tune. This value is best explained as a "bias" toward a particular </property>
+                                                                <property name="use-underline">true</property>
+                                                                <child>
+                                                                    <object class="GtkCheckButton" id="toggle_tune_vq">
+                                                                        <property name="active">True</property>
+                                                                        <property name="group">tunings</property>
+                                                                        <property name="label">VQ</property>
+                                                                        <property name="valign">center</property>
+                                                                        <property name="hexpand">False</property>
+                                                                        <signal name="toggled" handler="on_tune_vq" swapped="no" />
+                                                                        <property name="tooltip-text" translatable="yes">Tune 0 (VQ)</property>
+                                                                    </object>
+                                                                </child>
+                                                                <child>
+                                                                    <object class="GtkCheckButton" id="toggle_tune_psnr">
+                                                                        <property name="active">False</property>
+                                                                        <property name="group">tunings</property>
+                                                                        <property name="label">PSNR</property>
+                                                                        <property name="valign">center</property>
+                                                                        <property name="hexpand">False</property>
+                                                                        <signal name="toggled" handler="on_tune_psnr" swapped="no" />
+                                                                        <property name="tooltip-text" translatable="yes">Tune 1 (PSNR)</property>
+                                                                    </object>
+                                                                </child>
+                                                                <child>
+                                                                    <object class="GtkCheckButton" id="toggle_tune_ssim">
+                                                                        <property name="active">False</property>
+                                                                        <property name="group">tunings</property>
+                                                                        <property name="label">SSIM</property>
+                                                                        <property name="valign">center</property>
+                                                                        <property name="hexpand">False</property>
+                                                                        <signal name="toggled" handler="on_tune_ssim" swapped="no" />
+                                                                        <property name="tooltip-text" translatable="yes">Tune 2 (SSIM)</property>
+                                                                    </object>
+                                                                </child>
+                                                                <child>
+                                                                    <object class="GtkCheckButton" id="toggle_tune_psy">
+                                                                        <property name="active">False</property>
+                                                                        <property name="group">tunings</property>
+                                                                        <property name="label">PSY</property>
+                                                                        <property name="valign">center</property>
+                                                                        <property name="hexpand">False</property>
+                                                                        <signal name="toggled" handler="on_tune_psy" swapped="no" />
+                                                                        <property name="tooltip-text" translatable="yes">Tune 3 (Subjective SSIM)</property>
+                                                                    </object>
+                                                                </child>
+                                                            </object>
+                                                        </child>
+
+                                                        <child>
+                                                            <object class="AdwActionRow">
+                                                                <property name="title" translatable="yes">_Sharpness</property>
+                                                                <property name="tooltip-text">Granularly modifies loopfilter deblock sharpness &amp; rate distortion to (potentially) improve visual fidelity. Negative values decrease the effects of this setting &amp; positive values increase the effects of this setting. Increasing this value too much can lead to artifacting. If unsure, leave at 0.</property>
+                                                                <property name="use-underline">true</property>
+                                                                <child>
+                                                                    <object class="GtkBox">
+                                                                        <style>
+                                                                            <class name="linked" />
+                                                                        </style>
+                                                                        <child>
+                                                                            <object class="GtkScale" id="sharpness_scale">
+                                                                                <property name="hexpand">False</property>
+                                                                                <property name="valign">center</property>
+                                                                                <property name="draw-value">1</property>
+                                                                                <property name="digits">0</property>
+                                                                                <property name="value-pos">left</property>
+                                                                                <property name="width-request">300</property>
+                                                                                <property name="adjustment">
+                                                                                    <object class="GtkAdjustment">
+                                                                                        <property name="upper">7</property>
+                                                                                        <property name="value">0</property>
+                                                                                        <property name="lower">-7</property>
+                                                                                        <property name="step-increment">1</property>
+                                                                                        <property name="page-increment">1</property>
+                                                                                    </object>
+                                                                                </property>
+                                                                            </object>
+                                                                        </child>
+                                                                    </object>
+                                                                </child>
+                                                            </object>
+                                                        </child>
+
+                                                        <child>
+                                                            <object class="AdwActionRow">
+                                                                <property name="title" translatable="yes">_GOP Size</property>
+                                                                <property name="use-underline">true</property>
+                                                                <property name="tooltip-text">Sets the maximum GOP (Group of Pictures) size to use when chunking. Av1an ensures high-quality inefficient I-frames are inserted only at the beginning of new scenes to make encoding more efficient; this comes at the cost of video seeking performance during playback, especially if your media contains longer scenes. To remedy this, it is good practice to set a reasonable maximum frame count to force new chunk creation if a scene isn't detected within a specific number of frames. By default, this is set to 240 frames (~10 seconds in cinematic content).</property>
+                                                                <child>
+                                                                    <object class="GtkBox">
+                                                                        <property name="margin-top">8</property>
+                                                                        <property name="margin-bottom">8</property>
+                                                                        <child>
+                                                                            <object class="GtkEntry" id="gop_entry">
+                                                                                <property name="placeholder-text" translatable="yes">240</property>
+                                                                                <property name="max-width-chars">4</property>
+                                                                                <signal name="changed" handler="empty_or_not_empty" />
+                                                                            </object>
+                                                                        </child>
+                                                                    </object>
+                                                                </child>
+                                                                <child>
+                                                                    <object class="GtkCheckButton" id="toggle_ogop">
+                                                                        <property name="active">False</property>
+                                                                        <property name="label">oGOP</property>
+                                                                        <property name="valign">center</property>
+                                                                        <property name="hexpand">False</property>
+                                                                        <property name="tooltip-text" translatable="yes">Toggles Open GOPs, allowing GOPs to reference one another. If unsure, leave disabled, as enabling this usually does not improve visual fidelity per bit in SVT-AV1-PSY.</property>
+                                                                    </object>
+                                                                </child>
+                                                            </object>
+                                                        </child>
+
+                                                        <child>
+                                                            <object class="AdwActionRow">
+                                                                <property name="title" translatable="yes">_Variance Boost Strength</property>
+                                                                <property name="tooltip-text">Variance Boost utilizes variance information in each frame for more consistent quality under high/low contrast scenes. Four curve options are provided (1: mild, 2: gentle, 3: medium, 4: aggressive) &amp; the recommended value is 2.</property>
+                                                                <property name="use-underline">true</property>
+                                                                <child>
+                                                                    <object class="GtkCheckButton" id="toggle_altcurve">
+                                                                        <property name="active">False</property>
+                                                                        <property name="label">Alt Curve</property>
+                                                                        <property name="valign">center</property>
+                                                                        <property name="hexpand">False</property>
+                                                                        <property name="tooltip-text" translatable="yes">Toggles alternative variance boost behavior based on another curve with different bit allocation characteristics. If unsure, leave disabled.</property>
+                                                                    </object>
+                                                                </child>
+                                                                <child>
+                                                                    <object class="GtkBox">
+                                                                        <style>
+                                                                            <class name="linked" />
+                                                                        </style>
+                                                                        <child>
+                                                                            <object class="GtkScale" id="varboost_scale">
+                                                                                <property name="hexpand">False</property>
+                                                                                <property name="valign">center</property>
+                                                                                <property name="draw-value">1</property>
+                                                                                <property name="digits">0</property>
+                                                                                <property name="value-pos">left</property>
+                                                                                <property name="width-request">280</property>
+                                                                                <property name="adjustment">
+                                                                                    <object class="GtkAdjustment">
+                                                                                        <property name="upper">4</property>
+                                                                                        <property name="value">2</property>
+                                                                                        <property name="lower">1</property>
+                                                                                        <property name="step-increment">1</property>
+                                                                                        <property name="page-increment">1</property>
+                                                                                    </object>
+                                                                                </property>
+                                                                            </object>
+                                                                        </child>
+                                                                    </object>
+                                                                </child>
+                                                            </object>
+                                                        </child>
+
+                                                        <child>
+                                                            <object class="AdwActionRow">
+                                                                <property name="title" translatable="yes">_Variance Octile</property>
+                                                                <property name="tooltip-text">Variance Octile controls how "selective" the variance boost algorithm is when boosting superblocks (large blocks of pixels) based on their low/high 8-pixel by 8-pixel variance ratio. Lower values are less selective, while higher values lead to more conservative boosting behavior. The default value is 6.</property>
+                                                                <property name="use-underline">true</property>
+                                                                <child>
+                                                                    <object class="GtkBox">
+                                                                        <style>
+                                                                            <class name="linked" />
+                                                                        </style>
+                                                                        <child>
+                                                                            <object class="GtkScale" id="octile_scale">
+                                                                                <property name="hexpand">False</property>
+                                                                                <property name="valign">center</property>
+                                                                                <property name="draw-value">1</property>
+                                                                                <property name="digits">0</property>
+                                                                                <property name="value-pos">left</property>
+                                                                                <property name="width-request">300</property>
+                                                                                <property name="adjustment">
+                                                                                    <object class="GtkAdjustment">
+                                                                                        <property name="upper">8</property>
+                                                                                        <property name="value">6</property>
+                                                                                        <property name="lower">1</property>
+                                                                                        <property name="step-increment">1</property>
+                                                                                        <property name="page-increment">1</property>
+                                                                                    </object>
+                                                                                </property>
+                                                                            </object>
+                                                                        </child>
+                                                                    </object>
+                                                                </child>
+                                                            </object>
+                                                        </child>
+
+                                                        <child>
+                                                            <object class="AdwActionRow">
+                                                                <property name="title" translatable="yes">_QP Scale Compression</property>
+                                                                <property name="tooltip-text">QP Scale Compression increases temporal consistency, especially with clips that contain film grain or fast-moving objects.</property>
+                                                                <property name="use-underline">true</property>
+                                                                <child>
+                                                                    <object class="GtkCheckButton" id="toggle_dlf2">
+                                                                        <property name="active">False</property>
+                                                                        <property name="label">DLF2</property>
+                                                                        <property name="valign">center</property>
+                                                                        <property name="hexpand">False</property>
+                                                                        <property name="tooltip-text" translatable="yes">Toggles a more accurate loop filter that prevents blocking for a modest increase in compute time. When enabled, the effects are most noticeable at Preset 7 through Preset 9. It is not recommended to enable this at lower presets.</property>
+                                                                    </object>
+                                                                </child>
+                                                                <child>
+                                                                    <object class="GtkBox">
+                                                                        <style>
+                                                                            <class name="linked" />
+                                                                        </style>
+                                                                        <child>
+                                                                            <object class="GtkScale" id="qpcomp_scale">
+                                                                                <property name="hexpand">False</property>
+                                                                                <property name="valign">center</property>
+                                                                                <property name="draw-value">1</property>
+                                                                                <property name="digits">0</property>
+                                                                                <property name="value-pos">left</property>
+                                                                                <property name="width-request">300</property>
+                                                                                <property name="adjustment">
+                                                                                    <object class="GtkAdjustment">
+                                                                                        <property name="upper">3</property>
+                                                                                        <property name="value">1</property>
+                                                                                        <property name="lower">0</property>
+                                                                                        <property name="step-increment">1</property>
+                                                                                        <property name="page-increment">1</property>
+                                                                                    </object>
+                                                                                </property>
+                                                                            </object>
+                                                                        </child>
+                                                                    </object>
+                                                                </child>
+                                                            </object>
+                                                        </child>
+
+                                                        <child>
+                                                            <object class="AdwExpanderRow">
+                                                                <property name="title" translatable="yes">_Quantization Matrix Settings</property>
+                                                                <property name="use-underline">true</property>
+                                                                <property name="tooltip-text">Control various settings related to quantization matrices in SVT-AV1-PSY.</property>
+                                                                
+                                                                <child>
+                                                                    <object class="AdwActionRow">
+                                                                        <property name="title" translatable="yes">_Enable Quantization Matrices</property>
+                                                                        <property name="use-underline">true</property>
+                                                                        <property name="tooltip-text" translatable="yes">Enable quantization matrices. It is almost always recommended to leave this enabled.</property>
+                                                                        <child>
+                                                                            <object class="GtkSwitch" id="toggle_qm">
+                                                                                <property name="active">True</property>
+                                                                                <signal name="state-set" handler="empty_or_not_empty" swapped="no"/>
+                                                                                <property name="valign">center</property>
+                                                                            </object>
+                                                                        </child>
+                                                                    </object>
+                                                                </child>
+
+                                                                <child>
+                                                                    <object class="AdwActionRow">
+                                                                        <property name="title" translatable="yes">_Minimum Flatness</property>
+                                                                        <property name="tooltip-text">Minimum quantization matrix flatness. Lower is often better.</property>
+                                                                        <property name="use-underline">true</property>
+                                                                        <child>
+                                                                            <object class="GtkBox">
+                                                                                <style>
+                                                                                    <class name="linked" />
+                                                                                </style>
+                                                                                <child>
+                                                                                    <object class="GtkScale" id="qm_min_scale">
+                                                                                        <property name="hexpand">False</property>
+                                                                                        <property name="valign">center</property>
+                                                                                        <property name="draw-value">1</property>
+                                                                                        <property name="digits">0</property>
+                                                                                        <property name="value-pos">left</property>
+                                                                                        <property name="width-request">300</property>
+                                                                                        <property name="adjustment">
+                                                                                            <object class="GtkAdjustment">
+                                                                                                <property name="upper">15</property>
+                                                                                                <property name="value">0</property>
+                                                                                                <property name="lower">0</property>
+                                                                                                <property name="step-increment">1</property>
+                                                                                                <property name="page-increment">1</property>
+                                                                                            </object>
+                                                                                        </property>
+                                                                                    </object>
+                                                                                </child>
+                                                                            </object>
+                                                                        </child>
+                                                                    </object>
+                                                                </child>
+
+                                                                <child>
+                                                                    <object class="AdwActionRow">
+                                                                        <property name="title" translatable="yes">_Maximum Flatness</property>
+                                                                        <property name="tooltip-text">Maximum quantization matrix flatness. Higher is often better.</property>
+                                                                        <property name="use-underline">true</property>
+                                                                        <child>
+                                                                            <object class="GtkBox">
+                                                                                <style>
+                                                                                    <class name="linked" />
+                                                                                </style>
+                                                                                <child>
+                                                                                    <object class="GtkScale" id="qm_max_scale">
+                                                                                        <property name="hexpand">False</property>
+                                                                                        <property name="valign">center</property>
+                                                                                        <property name="draw-value">1</property>
+                                                                                        <property name="digits">0</property>
+                                                                                        <property name="value-pos">left</property>
+                                                                                        <property name="width-request">300</property>
+                                                                                        <property name="adjustment">
+                                                                                            <object class="GtkAdjustment">
+                                                                                                <property name="upper">15</property>
+                                                                                                <property name="value">15</property>
+                                                                                                <property name="lower">0</property>
+                                                                                                <property name="step-increment">1</property>
+                                                                                                <property name="page-increment">1</property>
+                                                                                            </object>
+                                                                                        </property>
+                                                                                    </object>
+                                                                                </child>
+                                                                            </object>
+                                                                        </child>
+                                                                    </object>
+                                                                </child>
 
                                                             </object>
                                                         </child>
+
+                                                        <child>
+                                                            <object class="AdwExpanderRow">
+                                                                <property name="title" translatable="yes">_Miscellaneous</property>
+                                                                <property name="use-underline">true</property>
+                                                                <property name="tooltip-text">Various settings related to quality options in SVT-AV1-PSY.</property>
+                                                                
+                                                                <child>
+                                                                    <object class="AdwActionRow">
+                                                                        <property name="title" translatable="yes">_Enable Alternate Reference Frames</property>
+                                                                        <property name="use-underline">true</property>
+                                                                        <property name="tooltip-text" translatable="yes">Allow the encoder to produce temporally filtered frames. It is almost always recommended to leave this enabled.</property>
+                                                                        <child>
+                                                                            <object class="GtkCheckButton" id="toggle_overlays">
+                                                                                <property name="active">False</property>
+                                                                                <property name="label">Overlays</property>
+                                                                                <property name="valign">center</property>
+                                                                                <property name="hexpand">False</property>
+                                                                                <property name="tooltip-text" translatable="yes">Enable the insertion of overlayer frames, which are used as additional reference frames for their respective base frames.</property>
+                                                                            </object>
+                                                                        </child>
+                                                                        
+                                                                        <child>
+                                                                            <object class="GtkSwitch" id="toggle_tf">
+                                                                                <property name="active">True</property>
+                                                                                <signal name="state-set" handler="empty_or_not_empty" swapped="no"/>
+                                                                                <property name="valign">center</property>
+                                                                            </object>
+                                                                        </child>
+                                                                    </object>
+                                                                </child>
+
+                                                                <child>
+                                                                    <object class="AdwActionRow">
+                                                                        <property name="title" translatable="yes">_Tiles</property>
+                                                                        <property name="use-underline">true</property>
+                                                                        <property name="tooltip-text" translatable="yes">Number of tile rows &amp; columns to use (defaults to 0 for both, calculated as log2(x)). Tiles increase video decoding performance while incurring a fidelity penalty.</property>
+                                                                        <child>
+                                                                            <object class="GtkCheckButton" id="toggle_cdef">
+                                                                                <property name="active">True</property>
+                                                                                <property name="label">CDEF</property>
+                                                                                <property name="valign">center</property>
+                                                                                <property name="hexpand">False</property>
+                                                                                <property name="tooltip-text">Enable the Constrained Directional Enhancement Filter.</property>
+                                                                            </object>
+                                                                        </child>
+                                                                        <child>
+                                                                            <object class="GtkBox">
+                                                                                <child></child>
+                                                                                <child>
+                                                                                    <object class="GtkBox">
+                                                                                        <property name="margin-top">8</property>
+                                                                                        <property name="margin-bottom">8</property>
+                                                                                        <style>
+                                                                                            <class name="linked" />
+                                                                                        </style>
+                                                                                        <child>
+                                                                                            <object class="GtkEntry" id="tile_rows_entry">
+                                                                                                <property name="placeholder-text" translatable="yes">Rows (0-6)</property>
+                                                                                                <property name="max-width-chars">12</property>
+                                                                                            </object>
+                                                                                        </child>
+                                                                                        <child>
+                                                                                            <object class="GtkEntry" id="tile_cols_entry">
+                                                                                                <property name="placeholder-text" translatable="yes">Columns (0-6)</property>
+                                                                                                <property name="max-width-chars">12</property>
+                                                                                            </object>
+                                                                                        </child>
+                                                                                    </object>
+                                                                                </child>
+                                                                            </object>
+                                                                        </child>
+                                                                    </object>
+                                                                </child>
+
+                                                            </object>
+                                                        </child>
+
                                                     </object>
                                                 </child>
                                             </object>
@@ -302,48 +709,20 @@ Leave untouched if unsure.                                                      
                                                             <object class="AdwActionRow">
                                                                 <property name="title" translatable="yes">_Bitrate</property>
                                                                 <property name="use-underline">true</property>
-                                                                <property name="tooltip-text">Sets the target audio bitrate to a value in kbps for Opus transcoding. Higher values mean better quality at the expense of filesize. Recommended values for nearly transparent quality are:
-Stereo: 32 (low) to 128 (high)
-5.1 Surround: 224
-7.1 Surround: 336
-Going much higher than the recommended values won't offer significant gain. If no value is specified, the source audio will be copied untouched.</property>
+                                                                <property name="tooltip-text">Sets the target audio bitrate to a value in kb/s for Opus transcoding. Higher values mean better quality at the expense of filesize. In order to achieve transparent quality at different channel quantities, you should set this value to 128 (Stereo), 224 (5.1 Surround), or 336 (7.1 Surround). If no value is specified, 112 is set by default.</property>
                                                                 <child>
-                                                                    <!-- <child>
-                                                                            <object class="GtkLabel">
-                                                                                <property name="margin-top">24</property>
-                                                                                <property name="margin-bottom">24</property>
-                                                                                <property name="margin-start">24</property>
-                                                                                <property name="margin-end">24</property>
-                                                                                <property name="label" translatable="yes">Resolution</property>
-                                                                            </object>
-                                                                        </child> -->
                                                                     <object class="GtkBox">
                                                                         <property name="margin-top">8</property>
                                                                         <property name="margin-bottom">8</property>
 
                                                                         <child>
                                                                             <object class="GtkEntry" id="bitrate_entry">
-                                                                                <property name="placeholder-text" translatable="yes">kbps</property>
-                                                                                <property name="max-width-chars">3</property>
+                                                                                <property name="placeholder-text" translatable="yes">kb/s</property>
+                                                                                <property name="max-width-chars">4</property>
                                                                                 <signal name="changed" handler="empty_or_not_empty" />
                                                                             </object>
                                                                         </child>
 
-                                                                    </object>
-                                                                </child>
-                                                            </object>
-                                                        </child>
-
-                                                        <child>
-                                                            <object class="AdwActionRow">
-                                                                <property name="title" translatable="yes">_Variable Bit Rate</property>
-                                                                <property name="use-underline">true</property>
-                                                                <property name="tooltip-text">Allows Opus to vary the audio bitrate based on the complexity of the audio. It is highly recommended to leave this enabled.</property>
-                                                                <child>
-                                                                    <object class="GtkSwitch" id="vbr_switch">
-                                                                        <property name="active">True</property>
-                                                                        <property name="valign">center</property>
-                                                                        <!-- <property name="active" bind-source="LoginAdvancedDialog" bind-property="autodiscovery" bind-flags="sync-create|bidirectional" /> -->
                                                                     </object>
                                                                 </child>
                                                             </object>
@@ -363,57 +742,24 @@ Going much higher than the recommended values won't offer significant gain. If n
                                                                 </child>
                                                             </object>
                                                         </child>
-                                                    </object>
-                                                </child>
-                                            </object>
-                                        </child>
-                                    </object>
-                                </property>
-                            </object>
-                        </child>
-
-                        <!-- Advanced Tab -->
-                        <child>
-                            <object class="AdwViewStackPage">
-                                <property name="name">page4</property>
-                                <property name="title" translatable="yes">_Advanced</property>
-                                <property name="icon-name">application-x-addon-symbolic</property>
-                                <property name="use-underline">True</property>
-                                <property name="child">
-                                    <object class="GtkBox">
-                                        <property name="orientation">vertical</property>
-                                        <property name="homogeneous">False</property>
-                                        <child>
-                                            <object class="AdwPreferencesPage">
-                                                <property name="margin-top">16</property>
-                                                <child>
-                                                    <object class="AdwPreferencesGroup">
 
                                                         <child>
                                                             <object class="AdwActionRow">
-                                                                <property name="title" translatable="yes">_Custom Av1an parameters</property>
+                                                                <property name="title" translatable="yes">_Copy Audio</property>
                                                                 <property name="use-underline">true</property>
-                                                                <property name="tooltip-text">Specify parameters to pass directly to Av1an. This will overwrite existing parameters.</property>
+                                                                <property name="tooltip-text" translatable="yes">Ignores all options on this page &amp; copies audio directly from the source untouched. Disables WebM output.</property>
                                                                 <child>
-                                                                    <!-- <child>
-                                                                            <object class="GtkLabel">
-                                                                                <property name="margin-top">24</property>
-                                                                                <property name="margin-bottom">24</property>
-                                                                                <property name="margin-start">24</property>
-                                                                                <property name="margin-end">24</property>
-                                                                                <property name="label" translatable="yes">Resolution</property>
-                                                                            </object>
-                                                                        </child> -->
-                                                                    <object class="GtkBox">
-                                                                        <property name="margin-top">10</property>
-                                                                        <property name="margin-bottom">10</property>
-                                                                        <child>
-                                                                            <object class="GtkEntry" id="av1an_entry">
-                                                                                <property name="width-request">420</property>
-                                                                                <!--property name="height-request">200</property-->
-                                                                                <property name="placeholder-text" translatable="yes">Overwrite default Av1an parameters</property>
+                                                                            <object class="GtkImage" id="info_copy_audio">
+                                                                                <property name="icon-name">dialog-information</property>
+                                                                                <property name="visible">true</property>
+                                                                                <property name="margin-end">20</property>
+                                                                                <property name="tooltip-text" translatable="yes">Ignores all options on this page &amp; copies audio directly from the source untouched. Disables WebM output.</property>
                                                                             </object>
                                                                         </child>
+                                                                <child>
+                                                                    <object class="GtkSwitch" id="audio_copy_switch">
+                                                                        <property name="active">False</property>
+                                                                        <property name="valign">center</property>
                                                                     </object>
                                                                 </child>
                                                             </object>
@@ -421,59 +767,35 @@ Going much higher than the recommended values won't offer significant gain. If n
 
                                                         <child>
                                                             <object class="AdwActionRow">
-                                                                <property name="title" translatable="yes">_Custom rav1e parameters</property>
+                                                                <property name="title" translatable="yes">_Volume</property>
+                                                                <property name="tooltip-text" translatable="yes">Increase or decrease audio volume. Measured in decibles. Positive numbers will increase volume while negative numbers will decrease it.</property>
                                                                 <property name="use-underline">true</property>
-                                                                <property name="tooltip-text">Specify parameters to pass directly to rav1e. This will overwrite existing parameters.</property>
                                                                 <child>
-                                                                    <!-- <child>
-                                                                            <object class="GtkLabel">
-                                                                                <property name="margin-top">24</property>
-                                                                                <property name="margin-bottom">24</property>
-                                                                                <property name="margin-start">24</property>
-                                                                                <property name="margin-end">24</property>
-                                                                                <property name="label" translatable="yes">Resolution</property>
-                                                                            </object>
-                                                                        </child> -->
-                                                                    <object class="GtkBox">
-                                                                        <property name="margin-top">10</property>
-                                                                        <property name="margin-bottom">10</property>
-                                                                        <child>
-                                                                            <object class="GtkEntry" id="rav1e_entry">
-                                                                                <property name="width-request">420</property>
-                                                                                <!--property name="height-request">200</property-->
-                                                                                <property name="placeholder-text" translatable="yes">Overwrite default rav1e parameters</property>
-                                                                            </object>
-                                                                        </child>
+                                                                    <object class="GtkCheckButton" id="loudnorm_toggle">
+                                                                        <property name="active">False</property>
+                                                                        <property name="label">Normalize</property>
+                                                                        <property name="valign">center</property>
+                                                                        <property name="hexpand">False</property>
+                                                                        <property name="tooltip-text" translatable="yes">Normalize the audio's perceived loudness.</property>
                                                                     </object>
                                                                 </child>
-                                                            </object>
-                                                        </child>
-
-
-                                                        <child>
-                                                            <object class="AdwActionRow">
-                                                                <property name="title" translatable="yes">_Workers</property>
-                                                                <property name="use-underline">true</property>
-                                                                <property name="tooltip-text">Sets the number of encoding instances that will be run in parallel to accelerate encoding on multicore CPUs. Higher values come at the cost of higher memory usage. Worker quantity is calculated heuristically based on your hardware specs by if left blank. Try reducing the number of workers if you encounter crashes.</property>
                                                                 <child>
-                                                                    <!-- <child>
-                                                                            <object class="GtkLabel">
-                                                                                <property name="margin-top">24</property>
-                                                                                <property name="margin-bottom">24</property>
-                                                                                <property name="margin-start">24</property>
-                                                                                <property name="margin-end">24</property>
-                                                                                <property name="label" translatable="yes">Resolution</property>
+                                                                    <object class="GtkScale" id="volume_scale">
+                                                                        <property name="halign">end</property>
+                                                                        <property name="valign">center</property>
+                                                                        <property name="draw-value">1</property>
+                                                                        <property name="digits">0</property>
+                                                                        <property name="value-pos">left</property>
+                                                                        <property name="width-request">300</property>
+                                                                        <property name="adjustment">
+                                                                            <object class="GtkAdjustment">
+                                                                                <property name="upper">10</property>
+                                                                                <property name="value">0</property>
+                                                                                <property name="lower">-10</property>
+                                                                                <property name="step-increment">1</property>
+                                                                                <property name="page-increment">1</property>
                                                                             </object>
-                                                                        </child> -->
-                                                                    <object class="GtkBox">
-                                                                        <property name="margin-top">8</property>
-                                                                        <property name="margin-bottom">8</property>
-                                                                        <child>
-                                                                            <object class="GtkEntry" id="workers_entry">
-                                                                                <property name="placeholder-text" translatable="yes">Auto</property>
-                                                                                <property name="max-width-chars">3</property>
-                                                                            </object>
-                                                                        </child>
+                                                                        </property>
                                                                     </object>
                                                                 </child>
                                                             </object>
@@ -505,7 +827,6 @@ Going much higher than the recommended values won't offer significant gain. If n
                                                 <child>
                                                     <object class="AdwPreferencesGroup">
                                                         <property name="margin-top">16</property>
-                                                        <!-- <property name="description" translatable="yes">Transcode a video to AV1.</property> -->
 
                                                         <child>
                                                             <object class="AdwActionRow">
@@ -545,7 +866,7 @@ Going much higher than the recommended values won't offer significant gain. If n
                                                             <object class="AdwActionRow">
                                                                 <property name="title" translatable="yes">_Container</property>
                                                                 <property name="use-underline">true</property>
-                                                                <property name="tooltip-text">The container your video is stored in, which is associated with the file extension. MKV is a universal video container with widespread support, while WebM is designed for web compatibility &amp; may break subtitles. WebM cannot be selected unless audio bitrate is specified to prevent audio copy.</property>
+                                                                <property name="tooltip-text">The container your video is stored in, which is associated with the file extension. MKV is a universal, open-source video container with widespread support.</property>
                                                                 <child>
                                                                     <object class="GtkBox">
                                                                         <property name="margin-top">10</property>
@@ -554,24 +875,8 @@ Going much higher than the recommended values won't offer significant gain. If n
                                                                             <class name="linked" />
                                                                         </style>
                                                                         <child>
-                                                                            <object class="GtkImage" id="warning_image_webm">
-                                                                                <property name="icon-name">dialog-warning</property>
-                                                                                <property name="visible">false</property>
-                                                                                <property name="margin-end">20</property>
-                                                                                <property name="tooltip-text" translatable="yes">Check that your source file doesn't contain subtitles if choosing the WebM container, else the output won't concatenate!</property>
-                                                                            </object>
-                                                                        </child>
-                                                                        <child>
                                                                             <object class="GtkButton" id="container_mkv_button">
                                                                                 <property name="label" translatable="yes">MKV</property>
-                                                                                <signal name="clicked" handler="container_mkv" swapped="no" />
-                                                                            </object>
-                                                                        </child>
-                                                                        <child>
-                                                                            <object class="GtkButton" id="container_webm_button">
-                                                                                <property name="label" translatable="yes">WEBM</property>
-                                                                                <property name="sensitive">false</property>
-                                                                                <signal name="clicked" handler="container_webm" swapped="no" />
                                                                             </object>
                                                                         </child>
                                                                     </object>
@@ -626,7 +931,6 @@ Going much higher than the recommended values won't offer significant gain. If n
                                                 <property name="halign">center</property>
                                                 <property name="visible">false</property>
                                                 <signal name="clicked" handler="stop_encode" swapped="no" />
-                                                <!-- <property name="icon-name">document-open-symbolic</property> -->
                                                 <style>
                                                     <class name="pill" />
                                                     <class name="destructive-action" />
@@ -638,12 +942,16 @@ Going much higher than the recommended values won't offer significant gain. If n
                                 </property>
                             </object>
                         </child>
+                        
                     </object>
-                </child>
-                <child>
+                </property>
+                <child type="bottom">
                     <object class="AdwViewSwitcherBar" id="switcher_bar">
                         <property name="stack">stack</property>
-                        <property name="reveal" bind-source="switcher_title" bind-property="title-visible" bind-flags="sync-create" />
+                        <property name="reveal"
+                                  bind-source="switcher_title"
+                                  bind-property="title-visible"
+                                  bind-flags="sync-create" />
                     </object>
                 </child>
             </object>

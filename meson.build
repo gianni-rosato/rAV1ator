@@ -1,11 +1,11 @@
 project('rAV1ator',
-  version: '1.1.2',
+  version: '2.0.0',
   meson_version: '>= 0.59',
 )
 
 dependency('glib-2.0')
 dependency('pygobject-3.0')
-dependency('libadwaita-1', version: '>= 1.2.alpha')
+dependency('libadwaita-1', version: '>= 1.4.0')
 
 gnome = import('gnome')
 python = import('python').find_installation('python3')
