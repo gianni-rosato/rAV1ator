@@ -141,6 +141,7 @@ class MainWindow(Adw.Window):
     resolution_height_entry = Gtk.Template.Child()
     crop_toggle = Gtk.Template.Child()
     crf_scale = Gtk.Template.Child()
+    warning_image_speed = Gtk.Template.Child()
     speed_scale = Gtk.Template.Child()
     toggle_denoise = Gtk.Template.Child()
     grain_scale = Gtk.Template.Child()
@@ -252,6 +253,15 @@ class MainWindow(Adw.Window):
         )
 
     @Gtk.Template.Callback()
+    def speed_changed(self, button):
+        if self.speed_scale.get_value() < 3:
+            self.warning_image_speed.set_visible(True)
+        elif self.speed_scale.get_value() > 2:
+            self.warning_image_speed.set_visible(False)
+        else:
+            self.warning_image_speed.set_visible(True)
+
+    @Gtk.Template.Callback()
     def open_output_file(self, button):
         FileSelectDialog(
             parent=self,
@@ -263,6 +273,7 @@ class MainWindow(Adw.Window):
 
     # Advanced
 
+    @Gtk.Template.Callback()
     def on_tune_vq(self, button):
         self.toggle_tune_vq.set_active(True)
         self.toggle_tune_psnr.set_active(False)
@@ -270,6 +281,7 @@ class MainWindow(Adw.Window):
         self.toggle_tune_psy.set_active(False)
         self.tune = 0
 
+    @Gtk.Template.Callback()
     def on_tune_psnr(self, button):
         self.toggle_tune_vq.set_active(False)
         self.toggle_tune_psnr.set_active(True)
@@ -277,6 +289,7 @@ class MainWindow(Adw.Window):
         self.toggle_tune_psy.set_active(False)
         self.tune = 1
 
+    @Gtk.Template.Callback()
     def on_tune_ssim(self, button):
         self.toggle_tune_vq.set_active(False)
         self.toggle_tune_psnr.set_active(False)
@@ -284,6 +297,7 @@ class MainWindow(Adw.Window):
         self.toggle_tune_psy.set_active(False)
         self.tune = 2
 
+    @Gtk.Template.Callback()
     def on_tune_psy(self, button):
         self.toggle_tune_vq.set_active(False)
         self.toggle_tune_psnr.set_active(False)
@@ -309,8 +323,7 @@ class MainWindow(Adw.Window):
             encode_start = time.time()
 
             try:
-                workers_specified = int(self.workers_entry.get_text())
-                workers = f"{workers_specified}"
+                workers = str(int(self.workers_entry.get_text()))
             except ValueError:
                 workers = "0"
 
@@ -378,7 +391,7 @@ class MainWindow(Adw.Window):
 
             grain_value = str(int(self.grain_scale.get_value()))
 
-            sharpness_lvl = self.sharpness_scale.get_value()
+            sharpness_lvl = int(self.sharpness_scale.get_value())
             
             if self.toggle_ogop.get_active():
                 encoder_opengop = "1"
@@ -407,12 +420,12 @@ class MainWindow(Adw.Window):
             qm_min_value = str(int(self.qm_min_scale.get_value()))
             qm_max_value = str(int(self.qm_max_scale.get_value()))
 
-            if self.toggle_overlays.get_state():
+            if self.toggle_overlays.get_active():
                 overlays_enabled = "1"
             else:
                 overlays_enabled = "0"
 
-            if self.toggle_tf.get_state():
+            if self.toggle_tf.get_active():
                 tf_enabled = "1"
             else:
                 tf_enabled = "0"
@@ -463,32 +476,33 @@ class MainWindow(Adw.Window):
 
             videosettings = " ".join([
                 "--tune", str(self.tune),
-                "--sharpness", sharpness_lvl,
+                "--sharpness", str(sharpness_lvl),
                 "--keyint", "-1",
                 "--lp", "2",
-                "--irefresh-type", encoder_opengop,
-                "--crf", crf_value,
-                "--preset", speed_value,
-                "--film-grain", grain_value,
-                "--film-grain-denoise", grain_denoise,
-                "--variance-boost-strength", varboost_strength,
-                "--variance-octile", octile_lvl,
-                "--enable-alt-curve", enc_alt_curve,
-                "--qp-scale-compress-strength", qp_comp_strength,
-                "--enable-dlf", dlf_value,
-                "--enable-qm", qm_enabled,
-                "--qm-min", qm_min_value,
-                "--qm-max", qm_max_value,
-                "--enable-tf", tf_enabled,
-                "--enable-cdef", cdef_enabled,
-                "--enable-overlays", overlays_enabled,
-                "--tile-rows", tile_rows,
-                "--tile-columns", tile_cols,
+                "--irefresh-type", str(encoder_opengop),
+                "--crf", str(crf_value),
+                "--preset", str(speed_value),
+                "--film-grain", str(grain_value),
+                "--film-grain-denoise", str(grain_denoise),
+                "--variance-boost-strength", str(varboost_strength),
+                "--variance-octile", str(octile_lvl),
+                "--enable-alt-curve", str(enc_alt_curve),
+                "--qp-scale-compress-strength", str(qp_comp_strength),
+                "--enable-dlf", str(dlf_value),
+                "--enable-qm", str(qm_enabled),
+                "--qm-min", str(qm_min_value),
+                "--qm-max", str(qm_max_value),
+                "--enable-tf", str(tf_enabled),
+                "--enable-cdef", str(cdef_enabled),
+                "--enable-overlays", str(overlays_enabled),
+                "--tile-rows", str(tile_rows),
+                "--tile-columns", str(tile_cols),
             ])
 
             cmd = [
                 "av1an",
                 "-y",
+                "-i", f"{self.source_file_absolute}",
                 "--temp", "av1an-cache",
                 "--split-method", "av-scenechange",
                 "-m", "hybrid",
@@ -497,12 +511,12 @@ class MainWindow(Adw.Window):
                 "-e", "svt-av1",
                 "--force",
                 "--pix-format", "yuv420p10le",
-                "-w", workers,
-                "-f", f" -vf {resolution} " if width is not None or height is not None  else " -y ",
-                "-a", audiosettings,
-                "-v", videosettings,
+                "-w", str(workers),
+                "-f", f"\"-vf {resolution}\"" if width is not None or height is not None  else "\"-y\"",
+                "-a", f"\"{audiosettings}\"",
+                "-v", f"\"{videosettings}\"",
                 "-x", f"{int(av1an_gop_size)}",
-                "-o", output,
+                "-o", str(output),
             ]
 
             print(" ".join(cmd))
@@ -529,7 +543,7 @@ class MainWindow(Adw.Window):
                 self.progress_bar.set_text(f"Encode finished in {humanize(encode_end)}! ✈️ ~ 0%")
                 self.stop_button.set_visible(False)
             else:
-                notify(f"Encode Stopped")
+                notify("Encode Stopped")
                 self.progress_bar.set_text("Encode Stopped ~ 0%")
                 self.stop_button.set_visible(False)
 

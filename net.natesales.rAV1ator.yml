@@ -85,7 +85,6 @@ modules:
       - "-DCMAKE_BUILD_TYPE=Release"
       - "-DCMAKE_CXX_FLAGS=-O3 -flto"
       - "-DCMAKE_C_FLAGS=-O3 -flto"
-      - "-DBUILD_SHARED_LIBS=ON"
       - "-DBUILD_APPS=ON"
       - "-DBUILD_DEC=OFF"
       - "-DBUILD_ENC=ON"
@@ -97,6 +96,8 @@ modules:
       - type: git
         url: https://github.com/gianni-rosato/svt-av1-psy
         commit: 5cac47c1eaee9c5229cdf693bf26e90ff6c54b40
+    build-commands:
+      - install /run/build/svt-av1-psy/Bin/Release/SvtAv1EncApp /app/bin/SvtAv1EncApp
 
   - name: av1an
     buildsystem: simple

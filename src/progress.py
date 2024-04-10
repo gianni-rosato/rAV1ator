@@ -19,4 +19,3 @@ while True:
     print(str(i) + " second")
     time.sleep(1)
     i += 1
-

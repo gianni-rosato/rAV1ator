@@ -150,7 +150,6 @@
                                                                                         <property name="page-increment">1</property>
                                                                                     </object>
                                                                                 </property>
-                                                                                <signal name="value-changed" handler="on_scale_value_changed"/>
                                                                             </object>
                                                                         </child>
                                                                     </object>
@@ -163,6 +162,14 @@
                                                                 <property name="title" translatable="yes">_Speed</property>
                                                                 <property name="tooltip-text">This value determines how hard your system will work to encode your video. Lower values mean your system will take longer to encode the video, but the files will be higher quality. Higher values will encode less efficiently, but much more quickly.</property>
                                                                 <property name="use-underline">true</property>
+                                                                <child>
+                                                                    <object class="GtkImage" id="warning_image_speed">
+                                                                        <property name="icon-name">dialog-warning</property>
+                                                                        <property name="visible">false</property>
+                                                                        <property name="margin-end">0</property>
+                                                                        <property name="tooltip-text" translatable="yes">Speeds below 3 are extremely slow and not recommended.</property>
+                                                                    </object>
+                                                                </child>
                                                                 <child>
                                                                     <object class="GtkScale" id="speed_scale">
                                                                         <property name="halign">end</property>
@@ -373,7 +380,6 @@
                                                                             <object class="GtkEntry" id="gop_entry">
                                                                                 <property name="placeholder-text" translatable="yes">240</property>
                                                                                 <property name="max-width-chars">4</property>
-                                                                                <signal name="changed" handler="empty_or_not_empty" />
                                                                             </object>
                                                                         </child>
                                                                     </object>
@@ -524,7 +530,6 @@
                                                                         <child>
                                                                             <object class="GtkSwitch" id="toggle_qm">
                                                                                 <property name="active">True</property>
-                                                                                <signal name="state-set" handler="empty_or_not_empty" swapped="no"/>
                                                                                 <property name="valign">center</property>
                                                                             </object>
                                                                         </child>
@@ -626,7 +631,6 @@
                                                                         <child>
                                                                             <object class="GtkSwitch" id="toggle_tf">
                                                                                 <property name="active">True</property>
-                                                                                <signal name="state-set" handler="empty_or_not_empty" swapped="no"/>
                                                                                 <property name="valign">center</property>
                                                                             </object>
                                                                         </child>
@@ -719,7 +723,6 @@
                                                                             <object class="GtkEntry" id="bitrate_entry">
                                                                                 <property name="placeholder-text" translatable="yes">kb/s</property>
                                                                                 <property name="max-width-chars">4</property>
-                                                                                <signal name="changed" handler="empty_or_not_empty" />
                                                                             </object>
                                                                         </child>
 
