@@ -74,6 +74,16 @@ modules:
         url: https://git.ffmpeg.org/ffmpeg.git
         commit: e38092ef9395d7049f871ef4d5411eb410e283e0
 
+  - name: av1an
+    buildsystem: simple
+    sources:
+      - type: git
+        url: https://github.com/gianni-rosato/av1an-progbar
+        commit: d14b5c08e0a317b52dcb09279a28b796adc788a9
+    build-commands:
+      - cargo build --release
+      - install target/release/av1an /app/bin/av1an
+
   - name: svt-av1-psy
     buildsystem: cmake-ninja
     builddir: true
@@ -95,19 +105,10 @@ modules:
     sources:
       - type: git
         url: https://github.com/gianni-rosato/svt-av1-psy
-        commit: 5cac47c1eaee9c5229cdf693bf26e90ff6c54b40
+        commit: 2df0e6282695185c4c183e3e313233be8c8b0192
     build-commands:
+      - pwd
       - install /run/build/svt-av1-psy/Bin/Release/SvtAv1EncApp /app/bin/SvtAv1EncApp
-
-  - name: av1an
-    buildsystem: simple
-    sources:
-      - type: git
-        url: https://github.com/gianni-rosato/av1an-progbar
-        commit: d14b5c08e0a317b52dcb09279a28b796adc788a9
-    build-commands:
-      - cargo build --release --verbose
-      - install target/release/av1an /app/bin/av1an
 
   - name: rAV1ator
     builddir: true

@@ -181,7 +181,6 @@
                                                                         <property name="adjustment">
                                                                             <object class="GtkAdjustment">
                                                                                 <property name="upper">13</property>
-                                                                                <property name="value">6</property>
                                                                                 <property name="lower">-3</property>
                                                                                 <property name="step-increment">1</property>
                                                                                 <property name="page-increment">1</property>
@@ -223,7 +222,6 @@
                                                                                 <property name="adjustment">
                                                                                     <object class="GtkAdjustment">
                                                                                         <property name="upper">50</property>
-                                                                                        <property name="value">0</property>
                                                                                         <property name="lower">0</property>
                                                                                         <property name="step-increment">1</property>
                                                                                         <property name="page-increment">1</property>
@@ -354,7 +352,6 @@
                                                                                 <property name="adjustment">
                                                                                     <object class="GtkAdjustment">
                                                                                         <property name="upper">7</property>
-                                                                                        <property name="value">0</property>
                                                                                         <property name="lower">-7</property>
                                                                                         <property name="step-increment">1</property>
                                                                                         <property name="page-increment">1</property>
@@ -426,7 +423,6 @@
                                                                                 <property name="adjustment">
                                                                                     <object class="GtkAdjustment">
                                                                                         <property name="upper">4</property>
-                                                                                        <property name="value">2</property>
                                                                                         <property name="lower">1</property>
                                                                                         <property name="step-increment">1</property>
                                                                                         <property name="page-increment">1</property>
@@ -460,7 +456,6 @@
                                                                                 <property name="adjustment">
                                                                                     <object class="GtkAdjustment">
                                                                                         <property name="upper">8</property>
-                                                                                        <property name="value">6</property>
                                                                                         <property name="lower">1</property>
                                                                                         <property name="step-increment">1</property>
                                                                                         <property name="page-increment">1</property>
@@ -503,7 +498,6 @@
                                                                                 <property name="adjustment">
                                                                                     <object class="GtkAdjustment">
                                                                                         <property name="upper">3</property>
-                                                                                        <property name="value">1</property>
                                                                                         <property name="lower">0</property>
                                                                                         <property name="step-increment">1</property>
                                                                                         <property name="page-increment">1</property>
@@ -530,6 +524,7 @@
                                                                         <child>
                                                                             <object class="GtkSwitch" id="toggle_qm">
                                                                                 <property name="active">True</property>
+                                                                                <signal name="state-set" handler="qm_state_check" swapped="no"/>
                                                                                 <property name="valign">center</property>
                                                                             </object>
                                                                         </child>
@@ -557,7 +552,6 @@
                                                                                         <property name="adjustment">
                                                                                             <object class="GtkAdjustment">
                                                                                                 <property name="upper">15</property>
-                                                                                                <property name="value">0</property>
                                                                                                 <property name="lower">0</property>
                                                                                                 <property name="step-increment">1</property>
                                                                                                 <property name="page-increment">1</property>
@@ -591,7 +585,6 @@
                                                                                         <property name="adjustment">
                                                                                             <object class="GtkAdjustment">
                                                                                                 <property name="upper">15</property>
-                                                                                                <property name="value">15</property>
                                                                                                 <property name="lower">0</property>
                                                                                                 <property name="step-increment">1</property>
                                                                                                 <property name="page-increment">1</property>
@@ -752,16 +745,9 @@
                                                                 <property name="use-underline">true</property>
                                                                 <property name="tooltip-text" translatable="yes">Ignores all options on this page &amp; copies audio directly from the source untouched. Disables WebM output.</property>
                                                                 <child>
-                                                                            <object class="GtkImage" id="info_copy_audio">
-                                                                                <property name="icon-name">dialog-information</property>
-                                                                                <property name="visible">true</property>
-                                                                                <property name="margin-end">20</property>
-                                                                                <property name="tooltip-text" translatable="yes">Ignores all options on this page &amp; copies audio directly from the source untouched. Disables WebM output.</property>
-                                                                            </object>
-                                                                        </child>
-                                                                <child>
                                                                     <object class="GtkSwitch" id="audio_copy_switch">
                                                                         <property name="active">False</property>
+                                                                        <signal name="state-set" handler="empty_or_not_empty" swapped="no"/>
                                                                         <property name="valign">center</property>
                                                                     </object>
                                                                 </child>
@@ -793,7 +779,6 @@
                                                                         <property name="adjustment">
                                                                             <object class="GtkAdjustment">
                                                                                 <property name="upper">10</property>
-                                                                                <property name="value">0</property>
                                                                                 <property name="lower">-10</property>
                                                                                 <property name="step-increment">1</property>
                                                                                 <property name="page-increment">1</property>

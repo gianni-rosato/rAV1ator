@@ -2,14 +2,13 @@ import logging
 import sys
 import threading
 import subprocess
-import gi
 import json
 import os
 import time
 import shutil
-
 from pathlib import Path
 from gettext import gettext as _
+import gi
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
@@ -65,10 +64,9 @@ def first_open():
     if os.path.exists(startup_file):
         return False
     else:
-        with open(startup_file, "w") as f:
+        with open(startup_file, "w", encoding="utf-8") as f:
             f.write("\n")
         return True
-
 
 class FileSelectDialog(Gtk.FileChooserDialog):
     home = Path.home()
@@ -179,7 +177,6 @@ class MainWindow(Adw.Window):
     # Export page
     output_file_label = Gtk.Template.Child()
     container_mkv_button = Gtk.Template.Child()
-    container = "mkv"
     encode_button = Gtk.Template.Child()
     encoding_spinner = Gtk.Template.Child()
     stop_button = Gtk.Template.Child()
@@ -197,10 +194,6 @@ class MainWindow(Adw.Window):
         self.toggle_tune_psy.set_active(True)
         self.tune = 3
 
-        # Default to MKV
-        self.container_mkv_button.set_has_frame(True)
-        self.container = "mkv"
-
         # Reset value to remove extra decimal
         self.speed_scale.set_value(0)
         self.speed_scale.set_value(6)
@@ -212,6 +205,20 @@ class MainWindow(Adw.Window):
         self.volume_scale.set_value(0)
         self.volume_scale.set_value(6)
         self.volume_scale.set_value(0)
+        self.sharpness_scale.set_value(0)
+        self.sharpness_scale.set_value(2)
+        self.sharpness_scale.set_value(0)
+        self.varboost_scale.set_value(0)
+        self.varboost_scale.set_value(2)
+        self.octile_scale.set_value(0)
+        self.octile_scale.set_value(6)
+        self.qpcomp_scale.set_value(0)
+        self.qpcomp_scale.set_value(1)
+        self.qm_min_scale.set_value(0)
+        self.qm_min_scale.set_value(1)
+        self.qm_min_scale.set_value(0)
+        self.qm_max_scale.set_value(0)
+        self.qm_max_scale.set_value(15)
 
         # resolution and audio bitrate
         self.metadata: (float, float, float) = ()
@@ -225,9 +232,6 @@ class MainWindow(Adw.Window):
         self.progress_bar.set_text("0%")
         self.process = None
         self.encode_start = None
-
-    def load_metadata(self):
-        self.metadata = metadata(self.source_file_absolute)
 
     def handle_file_select(self):
         # Trim file path
@@ -271,43 +275,51 @@ class MainWindow(Adw.Window):
             open_only=False,
         )
 
+    # Audio
+
+    @Gtk.Template.Callback()
+    def empty_or_not_empty(self, switch, gboolean):
+        if self.audio_copy_switch.get_state():
+            self.bitrate_entry.set_sensitive(True)
+            self.audio_copy_switch.set_sensitive(True)
+            self.loudnorm_toggle.set_sensitive(True)
+            self.volume_scale.set_sensitive(True)
+            self.downmix_switch.set_sensitive(True)
+        else:
+            self.bitrate_entry.set_sensitive(False)
+            self.loudnorm_toggle.set_sensitive(False)
+            self.volume_scale.set_sensitive(False)
+            self.downmix_switch.set_sensitive(False)
+
     # Advanced
 
     @Gtk.Template.Callback()
     def on_tune_vq(self, button):
-        self.toggle_tune_vq.set_active(True)
-        self.toggle_tune_psnr.set_active(False)
-        self.toggle_tune_ssim.set_active(False)
-        self.toggle_tune_psy.set_active(False)
         self.tune = 0
 
     @Gtk.Template.Callback()
     def on_tune_psnr(self, button):
-        self.toggle_tune_vq.set_active(False)
-        self.toggle_tune_psnr.set_active(True)
-        self.toggle_tune_ssim.set_active(False)
-        self.toggle_tune_psy.set_active(False)
         self.tune = 1
 
     @Gtk.Template.Callback()
     def on_tune_ssim(self, button):
-        self.toggle_tune_vq.set_active(False)
-        self.toggle_tune_psnr.set_active(False)
-        self.toggle_tune_ssim.set_active(True)
-        self.toggle_tune_psy.set_active(False)
         self.tune = 2
 
     @Gtk.Template.Callback()
     def on_tune_psy(self, button):
-        self.toggle_tune_vq.set_active(False)
-        self.toggle_tune_psnr.set_active(False)
-        self.toggle_tune_ssim.set_active(False)
-        self.toggle_tune_psy.set_active(True)
         self.tune = 3
 
-    # Export
+    @Gtk.Template.Callback()
+    def qm_state_check(self, switch, gboolean):
+        if self.toggle_qm.get_state():
+            self.toggle_qm.set_sensitive(True)
+            self.qm_min_scale.set_sensitive(False)
+            self.qm_max_scale.set_sensitive(False)
+        else:
+            self.qm_min_scale.set_sensitive(True)
+            self.qm_max_scale.set_sensitive(True)
 
-    container = "mkv"
+    # Export
 
     @Gtk.Template.Callback()
     def start_export(self, button):
@@ -357,16 +369,26 @@ class MainWindow(Adw.Window):
             else:
                 resolution = "-y"
 
+            opus_channels = "aformat=channel_layouts=7.1|6.1|5.1|stereo"
+
+            try:
+                bitrate = int(self.bitrate_entry.get_text())
+            except ValueError:
+                pass
+
+            if bitrate is None:
+                bitrate = 112
+
             if self.volume_scale.get_value() == 0:
                 if self.loudnorm_toggle.get_active():
-                    audio_filters = "loudnorm,aformat=channel_layouts=7.1|6.1|5.1|stereo"
+                    audio_filters = f"loudnorm,{opus_channels}"
                 else:
-                    audio_filters = "aformat=channel_layouts=7.1|6.1|5.1|stereo"
+                    audio_filters = f"{opus_channels}"
             else:
                 if self.loudnorm_toggle.get_active():
-                    audio_filters = f"loudnorm,volume={int(self.volume_scale.get_value())}dB,aformat=channel_layouts=7.1|6.1|5.1|stereo"
+                    audio_filters = f"loudnorm,volume={int(self.volume_scale.get_value())}dB,{opus_channels}"
                 else:
-                    audio_filters = f"volume={int(self.volume_scale.get_value())}dB,aformat=channel_layouts=7.1|6.1|5.1|stereo"
+                    audio_filters = f"volume={int(self.volume_scale.get_value())}dB,{opus_channels}"
 
             if self.audio_copy_switch.get_state():
                 audiosettings = " ".join([
@@ -376,7 +398,7 @@ class MainWindow(Adw.Window):
                 audiosettings = " ".join([
                     "-c:a", "libopus",
                     "-mapping_family", "1",
-                    "-b:a", self.bitrate_entry.get_text() + "K",
+                    "-b:a", str(bitrate) + "K",
                     "-af", audio_filters,
                     "-ac", "2" if self.downmix_switch.get_state() else "0"
                 ])
@@ -392,7 +414,7 @@ class MainWindow(Adw.Window):
             grain_value = str(int(self.grain_scale.get_value()))
 
             sharpness_lvl = int(self.sharpness_scale.get_value())
-            
+
             if self.toggle_ogop.get_active():
                 encoder_opengop = "1"
             else:
@@ -430,49 +452,39 @@ class MainWindow(Adw.Window):
             else:
                 tf_enabled = "0"
 
-            if self.tile_rows_entry.get_text() == "0":
+            try:
+                tile_rows_int = int(self.tile_rows_entry.get_text())
+            except ValueError:
+                pass
+
+            if tile_rows_int < 0:
                 tile_rows = "0"
-            elif self.tile_rows_entry.get_text() == "1":
-                tile_rows = "1"
-            elif self.tile_rows_entry.get_text() == "2":
-                tile_rows = "2"
-            elif self.tile_rows_entry.get_text() == "3":
-                tile_rows = "3"
-            elif self.tile_rows_entry.get_text() == "4":
-                tile_rows = "4"
-            elif self.tile_rows_entry.get_text() == "5":
-                tile_rows = "5"
-            elif self.tile_rows_entry.get_text() == "6":
+            elif tile_rows_int > 6:
                 tile_rows = "6"
             else:
-                tile_rows = "1"
-            
+                tile_rows = str(tile_rows_int)
+
+            try:
+                tile_cols_int = int(self.tile_cols_entry.get_text())
+            except ValueError:
+                pass
+
+            if tile_cols_int < 0:
+                tile_cols = "0"
+            elif tile_cols_int > 6:
+                tile_cols = "6"
+            else:
+                tile_cols = str(tile_cols_int)
+
             if self.toggle_cdef.get_active():
                 cdef_enabled = "1"
             else:
                 cdef_enabled = "0"
 
-            if self.tile_cols_entry.get_text() == "0":
-                tile_cols = "0"
-            elif self.tile_cols_entry.get_text() == "1":
-                tile_cols = "1"
-            elif self.tile_cols_entry.get_text() == "2":
-                tile_cols = "2"
-            elif self.tile_cols_entry.get_text() == "3":
-                tile_cols = "3"
-            elif self.tile_cols_entry.get_text() == "4":
-                tile_cols = "4"
-            elif self.tile_cols_entry.get_text() == "5":
-                tile_cols = "5"
-            elif self.tile_cols_entry.get_text() == "6":
-                tile_cols = "6"
-            else:
-                tile_cols = "1"
-
-            if self.gop_entry.get_text == "":
-                av1an_gop_size = "240"
-            else:
+            try:
                 av1an_gop_size = str(int(self.gop_entry.get_text()))
+            except ValueError:
+                av1an_gop_size = "240"
 
             videosettings = " ".join([
                 "--tune", str(self.tune),

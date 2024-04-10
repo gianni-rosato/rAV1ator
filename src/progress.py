@@ -5,11 +5,11 @@ import time
 
 
 def run_in_thread():
-    i = 0
-    while i < 10:
-        print(i)
+    j = 0
+    while j < 10:
+        print(j)
         time.sleep(1)
-        i += 1
+        j += 1
 
 thread = threading.Thread(target=run_in_thread)
 thread.start()
