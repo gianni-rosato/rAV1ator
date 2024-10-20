@@ -1,3 +1,20 @@
+# rAV1ator is End-of-life
+
+Thanks for using rAV1ator! Unfortunately, I have decided to discontinue development on this project.
+
+## Why?
+
+For a couple of reasons:
+
+- **rAV1e isn't as competitive as it used to be.** I've since been working on [SVT-AV1-PSY](https://github.com/gianni-rosato/svt-av1-psy/) which has combined rAV1e's usability with SVT-AV1's speed & aomenc's coding efficiency.
+- **Granular control over settings isn't as crucial now.** Encoding efficiently with AV1 used to be a laborious process that involved a lot of custom configuration. rAV1ator aimed to bring the flexibility of medium complexity CLI workflows to a GUI, but now that AV1 is more mature, the need for this is lessened as encoders like SVT-AV1-PSY are designed to have strong, versatile defaults. Highly complex workflows involving Vapoursynth have never been in the scope of this project to capture.
+- **Av1an isn't as important anymore.** Scene detection used to be considered very important, but SVT-AV1(-PSY) is fast enough where initializing new instances of the encoder for chunked encoding and waiting for scene detection to take place can meaningfully slow down the encoding process without a large quantity of threads. Scene detection also doesn't always offer meaningful compression efficiency gains.
+- **Aviator exists.** Aviator is a more modern, efficient, & user-friendly version of rAV1ator that is available now on Flathub. It is based on SVT-AV1-PSY and FFmpeg, and through sustained development effort it has matured into a more complete solution for AV1 encoding than rAV1ator ever was. You can find more info [on the Codec Wiki](https://wiki.x266.mov/docs/utilities/Aviator) or the [GitHub repository](https://github.com/gianni-rosato/aviator).
+
+## What now?
+
+Go ahead and switch to Aviator. If you're looking into the command line, rAV1ator CLI is still maintained. I'll be around to answer questions about the transition, and I'm always open to feedback. Thanks for using rAV1ator <3
+
 <div align="center">
 <h1>rAV1ator</h1>
 
@@ -16,7 +33,7 @@ A Flatpak-first easy-to-use GUI for encoding with rav1e & libopus.
 
 rAV1ator enables simple & easy video encoding for the word's most advanced open video codec, AV1. Encode your favorite media into super efficient files with incredible quality per bit, powered by the fast, memory-safe rav1e encoder with libopus for audio encoding. The sky's the limit for your old home video collection, large 4k smartphone videos, screen recordings, Blu-ray rips, you name it - take off with rAV1ator!
 
-rAV1ator is designed to be a no frills, easy to use AV1 encoding GUI that any beginner can pick up and immediately understand how to use. 
+rAV1ator is designed to be a no frills, easy to use AV1 encoding GUI that any beginner can pick up and immediately understand how to use.
 
 ## Installation
 
